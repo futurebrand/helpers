@@ -1,0 +1,1 @@
+export { handleImageRequestMiddleware } from './image-otimization'

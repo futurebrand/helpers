@@ -1,10 +1,11 @@
 {
-  "name": "@futurebrand/helpers",
-  "version": "0.0.1",
+  "name": "@futurebrand/helpers-nextjs",
+  "version": "0.1.0",
   "description": "FutureBrand Helpers",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsc -p tsconfig.json -w",
+    "build": "tsc -p tsconfig.json",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,39 @@
   "bugs": {
     "url": "https://github.com/futurebrand/helpers/issues"
   },
-  "homepage": "https://github.com/futurebrand/helpers#readme"
+  "homepage": "https://github.com/futurebrand/helpers#readme",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./components": "./dist/components/index.js",
+    "./configs": "./dist/configs/index.js",
+    "./hooks": "./dist/hooks/index.js",
+    "./middlewares": "./dist/middlewares/index.js",
+    "./modules": "./dist/modules/index.js",
+    "./services": "./dist/services/index.js",
+    "./utils": "./dist/utils/index.js",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "components": ["dist/components/index.d.ts"],
+      "configs": ["dist/configs/index.d.ts"],
+      "hooks": ["dist/hooks/index.d.ts"],
+      "middlewares": ["dist/middlewares/index.d.ts"],
+      "modules": ["dist/modules/index.d.ts"],
+      "services": ["dist/services/index.d.ts"],
+      "utils": ["dist/utils/index.d.ts"]
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.26",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "next": "^14.1.3",
+    "next-intl": "^3.9.4",
+    "tailwind-variants": "^0.2.0"
+  }
 }
