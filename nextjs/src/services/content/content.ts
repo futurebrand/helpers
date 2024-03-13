@@ -1,16 +1,18 @@
 import { notFound, redirect } from 'next/navigation'
-import i18n from '~/configs/i18n.json'
-import { IFetchResponse, type FetcherClient, FetcherError } from '~/modules/fetcher'
+import { PathModule } from '@futurebrand/modules'
+
+import { IFetchResponse, type FetcherClient, FetcherError } from '@futurebrand/modules/fetcher'
 import type { ContentTypes, IContent, IContentResponse, IContentSlugMap } from '~/types/contents'
-import cmsApi from '~/utils/cms-api'
+import cmsApi from '@futurebrand/strapi/api'
 
 class ContentService {
   private readonly fetcher: FetcherClient
-  public readonly locale: string
 
-  constructor(locale?: string, fetcher?: FetcherClient) {
+  constructor(public locale?: string, fetcher?: FetcherClient) {
     this.fetcher = fetcher || cmsApi
-    this.locale = locale || i18n.defaultLocale
+    if (!this.locale) {
+      this.locale = PathModule.instance.defaultLocale
+    }
   }
 
   public async getBySlug<T extends IContent>(

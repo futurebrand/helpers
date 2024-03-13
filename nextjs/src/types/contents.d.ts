@@ -5,15 +5,11 @@ declare module '~/types/contents' {
     IStrapiDataComponentList,
     IStrapiMedia,
     IStrapiTitle,
-  } from '~/types/strapi'
+  } from '@futurebrand/types/strapi'
 
   // TYPES
   export type ContentTypes = 'pages'
-  export interface IContentSlugs {
-    posts: string
-    tags: string
-    modals: string
-  }
+  export interface IContentSlugs {}
 
   export interface IContentSlugMap {
     slug: string
@@ -88,30 +84,5 @@ declare module '~/types/contents' {
   export interface IPageData extends IContent {
     blocks: Array<IPageBlockData<unknown>>
     path: string
-  }
-
-  // POST
-
-  export interface IPost extends IContent {
-    title: string
-    description: HTMLString
-    content: HTMLString
-    featuredImage: IStrapiImage
-    postTags: any[]
-    publishedDateTime: string
-  }
-
-  // POST TAG
-
-  export interface IPostTag extends IContent {
-    name: string
-  }
-
-  // MODAL
-
-  export interface IModal extends IContent {
-    id: number
-    title: IStrapiTitle
-    form: any & { id: number }
   }
 }

@@ -1,4 +1,4 @@
-import Fetcher from '~/modules/fetcher'
+import Fetcher from '@futurebrand/modules/fetcher'
 
 const basePath = `${process.env.cmsBaseUrl}/api`
 const token = process.env.CMS_BACKEND_TOKEN || process.env.cmsFrontendToken

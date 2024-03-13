@@ -126,6 +126,7 @@ class ContentApiModule {
 
     // Check if page exists
     if (!results || results.length <= 0) {
+      console.log(query)
       return false
     }
 

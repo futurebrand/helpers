@@ -1,23 +1,20 @@
 import type { Metadata, ResolvingMetadata, Viewport } from 'next'
-import PathModule from '~/modules/path'
-import ContentService from '~/services/content'
+import PathModule from '@futurebrand/modules/path'
+import ContentService from '@futurebrand/services/content'
 import { ContentTypes, ILocalization } from '~/types/contents'
-import { IGlobalSEO } from '~/types/global-options'
-import { getCMSMediaUrl } from '~/utils/cms-media'
-import { getContentUrl } from '~/utils/path'
+import { getCMSMediaUrl } from '@futurebrand/utils'
+
+import { IGlobalSEO } from '@futurebrand/types/global-options'
 
 class SEOModule {
-  path: PathModule
   contentService: ContentService
   
   constructor(
-    path?: PathModule,
     private readonly parent?: ResolvingMetadata,
     contentService?: ContentService
   ) {
-    this.path = path ?? new PathModule({})
     // TODO: Implement a mock for the contentService
-    this.contentService = contentService ?? new ContentService(this.path.locale)
+    this.contentService = contentService ?? new ContentService()
   }
 
   public async getLocalizationCanonicals(routes: ILocalization[], type: ContentTypes) {
@@ -25,7 +22,7 @@ class SEOModule {
 
     for (const route of routes) {
       const { locale, slug } = route
-      const url = getContentUrl(slug, locale, type)
+      const url = PathModule.instance.getContentUrl(slug, locale, type)
       if (url) {
         canonicals[locale] = url
       }
@@ -36,8 +33,11 @@ class SEOModule {
 
   public async getData() : Promise<Metadata> {
     try {
+      const path = PathModule.instance
+      const currentPath = path.currentPath
       // Query data
-      const pageData = await this.contentService.getBySlug(this.path.type, this.path.slug)
+      this.contentService.locale = path.currentLocale
+      const pageData = await this.contentService.getBySlug(currentPath.type, currentPath.slug)
       const globalSEO = await this.parent
   
       // Get page data
@@ -55,11 +55,11 @@ class SEOModule {
             height: metaImage.height,
           }
         : null
-      const url = this.path.url()
+      const url = path.currentUrl
   
       const { viewport, themeColor, colorScheme, ...globals } = globalSEO as any
   
-      const canonicals = await this.getLocalizationCanonicals(localizations, this.path.type)
+      const canonicals = await this.getLocalizationCanonicals(localizations, currentPath.type)
   
       // Return SEO data
       return {
@@ -76,7 +76,7 @@ class SEOModule {
           description: metaDescription,
           url,
           type: 'website',
-          locale: this.path.locale,
+          locale: path.currentLocale,
           ...(ogImage ? { images: [ogImage] } : {}),
         },
         alternates: {
@@ -140,9 +140,9 @@ class SEOModule {
     }
   }
 
-  public static async fromPageParams(params: any, parent?: ResolvingMetadata) { 
-    const path = new PathModule(params)
-    const seo = new SEOModule(path, parent)
+  public static async fromPageParams(params: any, parent?: ResolvingMetadata, fixedType?: ContentTypes) { 
+    const seo = new SEOModule(parent)
+    PathModule.instance.setPathFromParams(params, fixedType)
     return await seo.getData()
   }
 }

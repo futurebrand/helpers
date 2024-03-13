@@ -3,7 +3,7 @@ type ScrollCallback = (scrollY: number) => void
 
 /**
  * Example usage:
- * import { onScroll } from '~/utils/scroll'
+ * import { onScroll } from '@futurebrand/utils/scroll'
  * useEffect(() => {
  *   return onScroll((scrollPosition) => doSomething(scrollPosition))
  * }, [])

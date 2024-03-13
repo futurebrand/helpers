@@ -1,8 +1,8 @@
 import { type MetadataRoute } from 'next'
 
-import ContentService from '~/services/content'
-import { IContentSlugs, type ContentTypes } from '~/types/contents'
-import { getContentPath, getContentUrl } from '~/utils/path'
+import ContentService from '@futurebrand/services/content'
+import { type ContentTypes } from '~/types/contents'
+import PathModule from '../path'
 
 interface IStaticPath {
   slug: string[]
@@ -10,29 +10,30 @@ interface IStaticPath {
 }
 
 class SiteMapModule {
-  constructor (private contentTypes: IContentSlugs) {}
-  private getContentTypeWithSingles() {
-    const contentTypes = Object.keys(this.contentTypes)
-    return ['pages', ...contentTypes] as ContentTypes[]
+  locales: string[]
+  singleTypes: ContentTypes[] 
+  
+  constructor () {
+    const path = PathModule.instance
+    this.locales = path.locales
+    this.singleTypes = path.getContentTypeWithSingles()
   }
 
-  public async getGenerateStaticPath(locales: string[]) {
+  public async getGenerateStaticPath() {
     const paths: IStaticPath[] = []
 
-    for (const locale of locales) {
+    for (const locale of this.locales) {
       // Contents
-      const contentTypes = this.getContentTypeWithSingles()
       const contentService = new ContentService(locale)
 
-      for (const type of contentTypes) {
+      for (const type of this.singleTypes) {
         const pathsMap = await contentService.getPathsMap(type)
 
         const slicedIndex = type === 'pages' ? 30 : 10
         const slicedPathsMap = pathsMap.slice(0, slicedIndex)
 
         for (const pathMap of slicedPathsMap) {
-          const path = getContentPath(pathMap.slug, locale, type)
-
+          const path = PathModule.instance.getContentPath(pathMap.slug, type, locale, false)
           if (
             type === 'pages' &&
             (pathMap.slug === '/' || pathMap.slug === `/${locale}`)
@@ -51,17 +52,16 @@ class SiteMapModule {
     return paths
   }
 
-  public async getGenerateSitemap(locales: string[]): Promise<MetadataRoute.Sitemap> {
+  public async getGenerateSitemap(): Promise<MetadataRoute.Sitemap> {
     const urls: MetadataRoute.Sitemap = []
 
-    for (const locale of locales) {
-      const contentTypes = this.getContentTypeWithSingles()
+    for (const locale of this.locales) {
       const contentService = new ContentService(locale)
 
-      for (const type of contentTypes) {
+      for (const type of this.singleTypes) {
         const pathsMap = await contentService.getPathsMap(type)
         for (const pathMap of pathsMap) {
-          const url = getContentUrl(pathMap.slug, locale, type)
+          const url = PathModule.instance.getContentUrl(pathMap.slug, locale, type)
           const date = pathMap.date ? new Date(pathMap.date) : new Date()
           urls.push({
             url,

@@ -1,0 +1,5 @@
+export { StrapiImage, StrapiImageResponsive } from './strapi-image'
+export { default as StrapiTitle } from './strapi-title'
+export { default as StrapiVideo } from './strapi-video'
+export { RichText } from './rich-text'
+export { default as Link, LinkPropeties } from './link'

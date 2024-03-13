@@ -1,5 +1,5 @@
-declare module '~/types/strapi' {
-  import { IFetchResponse } from '~/modules/fetcher'
+declare module '@futurebrand/types/strapi' {
+  import { IFetchResponse } from '@futurebrand/modules/fetcher'
 
   export type HTMLString = string
 

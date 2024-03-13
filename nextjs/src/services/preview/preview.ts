@@ -1,11 +1,10 @@
 import { notFound } from 'next/navigation'
 
 import { IPreviewProps } from './types'
-import { ApiResponse } from '~/types/strapi'
-import type { FetcherClient  } from '~/modules/fetcher'
+import { ApiResponse } from '@futurebrand/types/strapi'
+import type { FetcherClient  } from '@futurebrand/modules/fetcher'
 import type {IContent } from '~/types/contents'
-import cmsApi from '~/utils/cms-api'
-
+import cmsApi from '@futurebrand/strapi/api'
 
 class PreviewContentService {
   private readonly fetcher: FetcherClient

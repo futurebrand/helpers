@@ -18,7 +18,7 @@ const ANIMATIONS_DELAY: Record<number, string> = {
 
 /**
  * Example usage:
- * import { animate } from '~/utils/animation'
+ * import { animate } from '@futurebrand/utils/animation'
  *
  * const MyComponent: React.FC = () => {
  *  return (

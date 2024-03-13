@@ -1,5 +1,5 @@
-import { ApiResponse } from '~/types/strapi';
-import { IGlobalOptions, IGlobalStructure } from '~/types/global-options';
+import { ApiResponse } from '@futurebrand/types/strapi';
+import { IGlobalOptions, IGlobalStructure } from '@futurebrand/types/global-options';
 import GlobalClient from './options.interface';
 
 class OptionsService extends GlobalClient {
@@ -53,50 +53,24 @@ class OptionsService extends GlobalClient {
   public static async instantiate(locale: string) {
     const options = new OptionsService(locale)
     await options.initialize()
-
     return options
   }
 
   // GETTERS
   
-  private get options() {
+  public get options() {
     if (!this.initialized) {
       throw new Error('Options not initialized')
     }
     return this.optionsState as IGlobalOptions
   }
 
-  private get structure() {
+  public get structure() {
     if (!this.initialized) {
       throw new Error('Options not initialized')
     }
     return this.structureState as IGlobalStructure
   }
-
-  public get header() {
-    return this.structure.header
-  }
-
-  public get footer() {
-    return this.structure.footer
-  }
-
-  public get menu() {
-    return this.structure.menu
-  }
-
-  public get notFound() {
-    return this.options.notFound
-  }
-  
-  public get dictionary() {
-    return this.options.dictionary
-  }
-
-  public get globalSEO() {
-    return this.options.globalSEO
-  }
-
 }
 
 export default OptionsService
