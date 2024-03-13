@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { PathModule } from '@futurebrand/modules'
 
 import { IFetchResponse, type FetcherClient, FetcherError } from '@futurebrand/modules/fetcher'
-import type { ContentTypes, IContent, IContentResponse, IContentSlugMap } from '~/types/contents'
+import type { ContentTypes, IContent, IContentResponse, IContentSlugMap } from '@futurebrand/types/contents'
 import cmsApi from '@futurebrand/strapi/api'
 
 class ContentService {

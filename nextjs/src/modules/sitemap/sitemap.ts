@@ -1,7 +1,7 @@
 import { type MetadataRoute } from 'next'
 
 import ContentService from '@futurebrand/services/content'
-import { type ContentTypes } from '~/types/contents'
+import { type ContentTypes } from '@futurebrand/types/contents'
 import PathModule from '../path'
 
 interface IStaticPath {

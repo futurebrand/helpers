@@ -1,4 +1,4 @@
-import { IContentPagination } from "~/types/contents"
+import { IContentPagination } from "@futurebrand/types/contents"
 
 export interface IQueryResponse<T> {
   results: T[]

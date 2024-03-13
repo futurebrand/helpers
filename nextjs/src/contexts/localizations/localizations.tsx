@@ -2,7 +2,7 @@
 
 import React, { createContext, useCallback, useMemo } from 'react'
 
-import { ContentTypes, IContentSlugs, ILocalization } from '~/types/contents'
+import { ContentTypes, IContentSlugs, ILocalization } from '@futurebrand/types/contents'
 import { IDictonary } from '@futurebrand/types/global-options'
 
 interface ILocalizationsContext {

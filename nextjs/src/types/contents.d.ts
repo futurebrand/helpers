@@ -1,4 +1,4 @@
-declare module '~/types/contents' {
+declare module '@futurebrand/types/contents' {
   import type {
     HTMLString,
     IResponsiveImage,

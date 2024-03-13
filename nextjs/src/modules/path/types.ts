@@ -1,4 +1,4 @@
-import { ContentTypes, IContentSlugs } from "~/types/contents"
+import { ContentTypes, IContentSlugs } from "@futurebrand/types/contents"
 
 export interface ICurrentPath {
   locale: string

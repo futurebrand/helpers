@@ -1,6 +1,6 @@
 
 import { ICurrentPath, ILocaleContentSlugs, IPageParams, IPathData } from "./types"
-import { ContentTypes, IContentSlugs } from "~/types/contents"
+import { ContentTypes, IContentSlugs } from "@futurebrand/types/contents"
 import { loadPathData } from "."
 
 class PathModule implements IPathData {

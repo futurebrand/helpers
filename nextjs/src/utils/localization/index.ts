@@ -1,4 +1,4 @@
-import { ILocalization, type ContentTypes } from '~/types/contents'
+import { ILocalization, type ContentTypes } from '@futurebrand/types/contents'
 
 import { PathModule } from '@futurebrand/modules'
 

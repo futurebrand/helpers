@@ -1,7 +1,7 @@
 import type { Metadata, ResolvingMetadata, Viewport } from 'next'
 import PathModule from '@futurebrand/modules/path'
 import ContentService from '@futurebrand/services/content'
-import { ContentTypes, ILocalization } from '~/types/contents'
+import { ContentTypes, ILocalization } from '@futurebrand/types/contents'
 import { getCMSMediaUrl } from '@futurebrand/utils'
 
 import { IGlobalSEO } from '@futurebrand/types/global-options'
