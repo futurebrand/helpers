@@ -3,12 +3,17 @@ import React, { PropsWithChildren } from 'react'
 
 export type LinkPropeties = {
   blank?: boolean
+  name: string
 } & LinkProps &
   React.AnchorHTMLAttributes<HTMLAnchorElement>
 
-const Link: React.FC<PropsWithChildren<LinkPropeties>> = ({ children, blank, ...props }) => {
+const Link: React.FC<PropsWithChildren<LinkPropeties>> = ({ children, name, className, blank, ...props }) => {
   return (
-    <NextLink {...(props as LinkPropeties)} target={blank ? '_blank' : ''}>
+    <NextLink 
+      {...(props as LinkPropeties)} 
+      target={blank ? '_blank' : ''}
+      className={`${name}${className ? ` ${className}` : ''}`}
+    >
       {children}
     </NextLink>
   )
