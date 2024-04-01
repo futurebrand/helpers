@@ -8,11 +8,11 @@ export interface ICurrentPath {
 
 export type ILocaleContentSlugs = Record<string, IContentSlugs> 
 
-export interface IPathData {
-  currentPath: ICurrentPath
-  locales: string[]
-  defaultLocale: string
-  slugs: ILocaleContentSlugs
+export interface IPathCache {
+  currentPath?: ICurrentPath
+  locales?: string[]
+  defaultLocale?: string
+  slugs?: ILocaleContentSlugs
 }
 
 export interface IStrapiLocales {

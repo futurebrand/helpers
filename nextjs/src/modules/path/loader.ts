@@ -1,7 +1,7 @@
 import cmsApi from '@futurebrand/strapi/api';
-import { ICurrentPath, ILocaleContentSlugs, IPathData, IStrapiLocales } from "./types";
+import { ICurrentPath, ILocaleContentSlugs, IPathCache, IStrapiLocales } from "./types";
 
-export async function loadPathData (currentLocale?: string, slugs?: ILocaleContentSlugs) {
+export async function loadPathData (slugs?: ILocaleContentSlugs) {
   const response = await cmsApi.get<IStrapiLocales[]>('/i18n/locales')
 
   if (!response.data && !response.data.length) {
@@ -10,7 +10,7 @@ export async function loadPathData (currentLocale?: string, slugs?: ILocaleConte
       defaultLocale: '',
       slugs: slugs ?? {},
       currentPath: {
-        locale: currentLocale ?? '',
+        locale: '',
         slug: '',
         type: 'pages',
       } as ICurrentPath,
@@ -20,12 +20,12 @@ export async function loadPathData (currentLocale?: string, slugs?: ILocaleConte
   const locales = response.data.map((locale) => locale.code)
   const defaultLocale = response.data.find((locale) => locale.isDefault)?.code
 
-  const data: IPathData = {
+  const data: IPathCache = {
     locales: locales ?? [],
     defaultLocale: defaultLocale ?? '',
     slugs: slugs ?? {},
     currentPath: {
-      locale: currentLocale ?? defaultLocale,
+      locale: defaultLocale,
       slug: '/',
       type: 'pages',
     } as ICurrentPath,

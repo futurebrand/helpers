@@ -82,7 +82,7 @@ declare module '@futurebrand/types/contents' {
   // PAGE
 
   export interface IPageData extends IContent {
-    blocks: Array<IPageBlockData<unknown>>
+    blocks: Array<IBlockData<unknown>>
     path: string
   }
 }

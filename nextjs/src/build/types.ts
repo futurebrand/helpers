@@ -1,4 +1,10 @@
-import { IHeadersConfigs } from "../headers/types";
+export interface IHeadersConfigs {
+  defaultSrc?: string[]
+  scriptSrc?: string[]
+  styleSrc?: string[]
+  frameSrc?: string[]
+  imgSrc?: string[]
+}
 
 export interface IBuildRedirect {
   source: string;
@@ -16,3 +22,4 @@ export interface IBuildConfig {
   redirects: IBuildRedirect
   headers: IHeadersConfigs
 }
+

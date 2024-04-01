@@ -21,17 +21,21 @@ const contentsService = ({strapi}) => {
     locale?: string
   ) => {
     const service = getContentService(type)
-    return await service.list(page, filters, locale)
+    return await service.query({
+      page, 
+      filters, 
+      locale
+    })
   }
 
   const listSlugs = async (type: string, locale?: string) => {
     const service = getContentService(type)
-    return await service.listSlugs(locale)
+    return await service.getContentSitemap(locale)
   }
 
   const findBySlug = async (type: string, slug: string, locale?: string) => {
     const service = getContentService(type)
-    return await service.getContentBySlug(slug, locale)
+    return await service.getContentSingle(slug, locale)
   }
 
   return {

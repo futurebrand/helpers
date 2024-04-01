@@ -1,17 +1,19 @@
+import fs from 'node:fs/promises'
 
-import { ICurrentPath, ILocaleContentSlugs, IPageParams, IPathData } from "./types"
+import { ICurrentPath, ILocaleContentSlugs, IPathCache } from "./types"
 import { ContentTypes, IContentSlugs } from "@futurebrand/types/contents"
 import { loadPathData } from "."
 
-class PathModule implements IPathData {
+class PathModule implements IPathCache {
   currentPath: ICurrentPath
   locales: string[]
   defaultLocale: string
   slugs: ILocaleContentSlugs
-  isInstantiated: boolean;
+  isInstantiated: boolean
+  changeEvent?: () => void
 
-  constructor (slugs: ILocaleContentSlugs) {
-    this.slugs = slugs
+  constructor () {
+    this.slugs = {}
     this.isInstantiated = false
   }
 
@@ -19,34 +21,50 @@ class PathModule implements IPathData {
     this.isInstantiated = true
   }
 
-  public static async instantialize(slugs: ILocaleContentSlugs, locale?: string): Promise<PathModule> {
+  public async loadSlugs() {
+    try {
+      const file = await fs.readFile(
+        process.cwd() + '/configs/content-slugs.json',
+        'utf8'
+      )
+      const data = JSON.parse(file) as ILocaleContentSlugs;
+      
+      this.slugs = data
+      
+      return data
+    } catch (error) {
+      console.error()
+      return {}
+    }
+  }
+
+  public static async instantialize(cache: IPathCache = {}): Promise<PathModule> {
     if (globalThis.__pathModule) {
       return globalThis.__pathModule
     }
 
-    const instance = new PathModule(slugs)
-    const pathLoader = await loadPathData(locale, slugs)
-    instance.locales = pathLoader.locales
-    instance.defaultLocale = pathLoader.defaultLocale
-    instance.currentPath = pathLoader.currentPath
+    const instance = new PathModule()
+    
+    if (cache?.slugs) {
+      instance.slugs = cache.slugs
+    } else {
+      await instance.loadSlugs()
+    }
+
+    if (!cache.locales || !cache.defaultLocale) {
+      const pathLoader = await loadPathData(instance.slugs)
+      instance.locales = pathLoader.locales
+      instance.defaultLocale = pathLoader.defaultLocale
+      instance.currentPath = pathLoader.currentPath
+    }
     
     instance.setInstantiated()
     globalThis.__pathModule = instance
+
     return instance
   }
 
-  public static fromCache(cache: IPathData): PathModule {
-    const instance = new PathModule(cache.slugs)
-    instance.locales = cache.locales
-    instance.defaultLocale = cache.defaultLocale
-    instance.currentPath = cache.currentPath
-    instance.slugs = cache.slugs
-    instance.setInstantiated()
-    return instance
-  }
-
-
-  public static get instance(): PathModule{
+  public static get instance(): PathModule {
     if (!globalThis.__pathModule) {
       throw new Error('PathModule not instantiated')
     }
@@ -55,6 +73,13 @@ class PathModule implements IPathData {
 
   public setCurrentPath(path: ICurrentPath) {
     this.currentPath = path
+    if (this.changeEvent) {
+      this.changeEvent()
+    }
+  }
+
+  public onChange(changeEvent: () => void) {
+    this.changeEvent = changeEvent
   }
 
   public setPathFromParams(params: any, fixedType?: ContentTypes) {
@@ -144,6 +169,15 @@ class PathModule implements IPathData {
   public getContentTypeWithSingles() {
     const contentTypes = Object.keys(this.getContentSlugs(this.defaultLocale))
     return ['pages', ...contentTypes] as ContentTypes[]
+  }
+
+  public toPathCache(): IPathCache {
+    return {
+      locales: this.locales,
+      defaultLocale: this.defaultLocale,
+      slugs: this.slugs,
+      currentPath: this.currentPath,
+    }
   }
 
   public getContentTypeBySlug (slug: string | string[], locale: string) : ContentTypes {
