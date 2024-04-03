@@ -1,17 +1,31 @@
 import { EntityService, type Common } from '@strapi/strapi'
 
 import { type IPopulateData } from '../../utils/populate/types'
-import { IQueryResponse, type IFilter, type IQueryProps, ISingleConfigs, IQueryConfigs, IPublicationState } from './types'
 import { type BlockData } from '../blocks/types'
 import { populateCollection } from '../../utils/populate'
 import ContentBlockHandler from '../blocks'
 import ContentModuleEvents from './contents.events'
+import type { 
+  IQueryResponse,  
+  IFilter, 
+  IQueryProps, 
+  ISingleConfigs, 
+  IQueryConfigs, 
+  IPublicationState, 
+  IOrder, 
+  SinglePathParams 
+} from './types'
 
-class ContentModule<T = IFilter> extends ContentModuleEvents<T> {
+const DEFAULT_PAGE_SIZE = 9
+const DEFAULT_SINGLE_PARAMS: SinglePathParams = { slug: 'slug' }
+const DEFAULT_PUBLICATION_STATE: IPublicationState = 'live'
+const DEFAULT_ORDER: IOrder = { publishedAt: 'desc' }
+
+class ContentModule<T = any> extends ContentModuleEvents<T> {
   protected readonly uid: Common.UID.Schema
 
   protected hasQuery: boolean
-  protected queryOrder: Record<string, 'desc' | 'asc'>
+  protected queryOrder: IOrder
   protected queryFilters: Record<string, any>
   protected queryPopulate: IPopulateData
   protected queryHasPagination: boolean
@@ -19,12 +33,11 @@ class ContentModule<T = IFilter> extends ContentModuleEvents<T> {
   protected queryPublicationState: IPublicationState
   
   protected hasSingle: boolean
-  protected singleFieldName: string
+  protected singlePathParams: SinglePathParams
   protected singlePopulate: IPopulateData
   protected singleSitemapFilters: Record<string, any>
   protected singlePublicationState: IPublicationState
-
-  protected blockHandler: ContentBlockHandler
+  protected singleBlockHandler: ContentBlockHandler
 
   /*
    * The uid can be the name of the folder in api directory.
@@ -43,33 +56,27 @@ class ContentModule<T = IFilter> extends ContentModuleEvents<T> {
     
     this.hasQuery = false
     this.queryHasPagination = true
-    this.queryPageSize = 9
-    this.queryPopulate = populateCollection(this.uid, 1)
-    this.queryOrder = { publishedAt: 'desc' }
+    this.queryPageSize = DEFAULT_PAGE_SIZE
+    this.queryPopulate = {}
+    this.queryOrder = DEFAULT_ORDER
     this.queryFilters = {}
-    this.queryPublicationState = 'live'
+    this.queryPublicationState = DEFAULT_PUBLICATION_STATE
 
     this.hasSingle = false
-    this.singleFieldName = 'slug'
+    this.singlePathParams = DEFAULT_SINGLE_PARAMS
     this.singlePopulate = populateCollection(this.uid)
     this.singleSitemapFilters = {
       pageSeo: {
         showOnGoogle: true,
       },
     }
-    this.singlePublicationState = 'live'
-
-  }
-
-
-  public addBlockHandler(blockHandler: ContentBlockHandler) {
-    this.blockHandler = blockHandler
+    this.singlePublicationState = DEFAULT_PUBLICATION_STATE
   }
 
   public addSinglePage(configs: ISingleConfigs = {}) {
     this.hasSingle = true
-    if (configs.fieldName) {
-      this.singleFieldName = configs.fieldName
+    if (configs.pathParams) {
+      this.singlePathParams = configs.pathParams
     }
     if (configs.populate) {
       this.singlePopulate = configs.populate
@@ -80,9 +87,12 @@ class ContentModule<T = IFilter> extends ContentModuleEvents<T> {
     if (configs.state) {
       this.singlePublicationState = configs.state
     }
+    if (configs.blockHandler) {
+      this.singleBlockHandler = configs.blockHandler
+    }
   }
 
-  public addQuery(configs: IQueryConfigs) {
+  public addQuery(configs: IQueryConfigs = {}) {
     this.hasQuery = true
     
     if (configs.order) {
@@ -110,17 +120,29 @@ class ContentModule<T = IFilter> extends ContentModuleEvents<T> {
     }
   }
 
-  protected async getSingleParams(slug: string, locale?: string) {
-    // Create possible path filters
-    const slugFilter = [slug, `${slug}/`]
+  protected async getSingleQuery(params: Record<string, string | string[]>, locale?: string) {
+    const filters = Object.keys(this.singlePathParams).reduce((acc, key) => {
+      
+
+      let value = Array.isArray(params[key]) ? (params[key] as string[]).join('/') : params[key] as string ?? ''
+      value = value.startsWith('/') ? value : `/${value}`
+      let slugs = [value, `${value}/`]
+
+      if (value === `/${locale}`) {
+        slugs = ['/',...slugs]
+      }
+
+      return {
+        ...acc,
+        [this.singlePathParams[key]]: {
+          $eq: slugs,
+        },
+      }
+    }, {})
 
     // Create Query Params
     const query = {
-      filters: {
-        [this.singleFieldName]: {
-          $eq: slugFilter,
-        },
-      },
+      filters,
       ...(locale ? { locale } : {}),
       populate: this.singlePopulate,
       limit: 1,
@@ -130,21 +152,21 @@ class ContentModule<T = IFilter> extends ContentModuleEvents<T> {
     return this.beforeGetSingleEvent(query)
   }
 
-  public async getContentSingle(slug: string, locale?: string) {
+  public async getContentSingle(params: Record<string, string>, locale?: string) {
     if (!this.hasSingle) {
       throw new Error('This content type does not have a single content')
     }
 
-    if (!slug) {
-      throw new Error('Slug is required')
+    if (!params) {
+      throw new Error('Params is required')
     }
 
-    const params = await this.getSingleParams(slug, locale)
+    const query = await this.getSingleQuery(params, locale)
     
     // Find Page
     const results = await strapi.entityService.findMany(
       this.uid as any,
-      params as any
+      query as any
     )
 
     // Check if page exists
@@ -156,15 +178,14 @@ class ContentModule<T = IFilter> extends ContentModuleEvents<T> {
     const data = results[0]
 
     // Handle Blocks
-    if (this.blockHandler && data) {
-      const key = this.blockHandler.fieldName
+    if (this.singleBlockHandler && data) {
+      const key = this.singleBlockHandler.fieldName
       if (data[key] && Array.isArray(data[key])) {
-        data[key] = await this.blockHandler.sanitize(
+        data[key] = await this.singleBlockHandler.sanitize(
           data[key] as BlockData[],
           locale
         )
       }
-
     }
 
     // Return Data
@@ -176,9 +197,11 @@ class ContentModule<T = IFilter> extends ContentModuleEvents<T> {
       throw new Error('This content type does not have a single content')
     }
 
+    const fields = Object.values(this.singlePathParams)
+
     // Find Page
     const results = await strapi.entityService.findMany(this.uid as any, {
-      fields: [this.singleFieldName, 'updatedAt'],
+      fields: [...fields, 'updatedAt'],
       filters: this.singleSitemapFilters,
       ...(locale ? { locale } : {}),
       publicationState: this.singlePublicationState,
@@ -190,7 +213,12 @@ class ContentModule<T = IFilter> extends ContentModuleEvents<T> {
 
     // Return Data
     return results.map((content) => ({
-      slug: content[this.singleFieldName],
+      params: fields.reduce((acc, field) => {
+        return {
+          ...acc,
+          [field]: content[field],
+        }
+      }, {}),
       date: content.updatedAt,
     }))
   }

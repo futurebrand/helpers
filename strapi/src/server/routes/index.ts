@@ -9,17 +9,17 @@ export default {
       {
         method: 'GET',
         path: '/contents',
-        handler: 'contents.list',
+        handler: 'contents.query',
       },
       {
         method: 'GET',
-        path: '/contents/slugs',
-        handler: 'contents.listSlugs',
+        path: '/contents/map',
+        handler: 'contents.sitemap',
       },
       {
         method: 'GET',
-        path: '/contents/find-by-slug',
-        handler: 'contents.findBySlug',
+        path: '/contents/single',
+        handler: 'contents.single',
       }
     ],
   },

@@ -12,8 +12,7 @@ export async function sanitizeContentLocalization(
 
   for (const route of routes) {
     const { locale } = route
-    const slug = type === 'pages' ? route.path : route.slug
-    const pageSlug = pathModule.getContentPath(slug as string, type, locale)
+    const pageSlug = pathModule.getLocalizedPathFromParams(route as any, locale, type)
     if (pageSlug) {
       localizations.push({
         ...route,

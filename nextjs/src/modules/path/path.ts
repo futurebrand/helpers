@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises'
+import * as pathToRegexp from 'path-to-regexp'
 
 import { ICurrentPath, ILocaleContentSlugs, IPathCache } from "./types"
 import { ContentTypes, IContentSlugs } from "@futurebrand/types/contents"
@@ -56,19 +57,16 @@ class PathModule implements IPathCache {
       instance.locales = pathLoader.locales
       instance.defaultLocale = pathLoader.defaultLocale
       instance.currentPath = pathLoader.currentPath
+    } else {
+      instance.locales = cache.locales
+      instance.defaultLocale = cache.defaultLocale
+      instance.currentPath = cache.currentPath
     }
     
     instance.setInstantiated()
     globalThis.__pathModule = instance
 
     return instance
-  }
-
-  public static get instance(): PathModule {
-    if (!globalThis.__pathModule) {
-      throw new Error('PathModule not instantiated')
-    }
-    return globalThis.__pathModule
   }
 
   public setCurrentPath(path: ICurrentPath) {
@@ -82,17 +80,17 @@ class PathModule implements IPathCache {
     this.changeEvent = changeEvent
   }
 
-  public setPathFromParams(params: any, fixedType?: ContentTypes) {
+  public getPathFromParams(params: any, fixedType?: ContentTypes) {
     const locale = params.locale ?? this.defaultLocale
 
-    const pageSlug = params.slug ?? this.getLocaleHome(locale)
-    const pageType = fixedType ?? this.getContentTypeBySlug(pageSlug, locale)
-
-    const slugString = this.getSlugStringByType(pageSlug, pageType)
-
+    const pagePath = this.getPathStringByParamsSlug(params.slug)
+    const pageType = fixedType ?? this.getContentTypeByPath(pagePath, locale)
+    const pageParams = this.getContentParamsByPath(pagePath, pageType, locale)
+    
     this.setCurrentPath({
+      path: pagePath,
       locale,
-      slug: slugString,
+      params: pageParams,
       type: pageType,
     })
 
@@ -111,55 +109,27 @@ class PathModule implements IPathCache {
     return this.slugs[locale]
   }
 
-  public getLocalePath(locale: string, url: string) {
-    url = url.startsWith('/') ? url : `/${url}`
+  public getLocalePath(path: string, locale: string) {
+    path = path.startsWith('/') ? path : `/${path}`
   
-    if (url.startsWith(`/${locale}`)) {
-      return url
+    if (path.startsWith(`/${locale}`)) {
+      return path
     }
   
-    return locale !== this.defaultLocale ? `/${locale}${url}` : url
+    return locale !== this.defaultLocale ? `/${locale}${path}` : path
   }
 
-  public getContentPath = (
-    pathString: string,
-    type: ContentTypes = 'pages',
-    locale: string,
-    localized = true
-  ) => {
-    const path = pathString?.endsWith('/') ? pathString : `${pathString}/`
-  
-    if (type === 'pages') {
-      if (!localized) {
-        return path
-      }
-      return this.getLocalePath(locale, path)
-    }
-  
-    const contentTypeSlug = this.getContentTypeSlug(type, locale)
-    if (contentTypeSlug) {
-      const contentPath = `${contentTypeSlug}${path}`
-      if (!localized) {
-        return contentPath
-      }
-      return this.getLocalePath(locale, contentPath)
-    }
-  
-    throw new Error('Content Type not Found')
-  }
-
-  public getContentUrl = (
+  public getLocalizedUrl = (
     path: string,
-    locale: string,
-    type: ContentTypes = 'pages'
+    locale: string
   ) => {
-    const pagePath = this.getContentPath(path, type, locale)
+    const pagePath = this.getLocalePath(path, locale)
     return `${process.env.siteUrl}${pagePath}`
   }
 
   public get currentUrl() {
-    const { locale, slug, type } = this.currentPath
-    return this.getContentUrl(slug, locale, type)
+    const { locale, path } = this.currentPath
+    return this.getLocalizedUrl(path, locale)
   }
 
   public get currentLocale() {
@@ -167,8 +137,7 @@ class PathModule implements IPathCache {
   }
 
   public getContentTypeWithSingles() {
-    const contentTypes = Object.keys(this.getContentSlugs(this.defaultLocale))
-    return ['pages', ...contentTypes] as ContentTypes[]
+    return Object.keys(this.getContentSlugs(this.defaultLocale)) as ContentTypes[]
   }
 
   public toPathCache(): IPathCache {
@@ -180,36 +149,91 @@ class PathModule implements IPathCache {
     }
   }
 
-  public getContentTypeBySlug (slug: string | string[], locale: string) : ContentTypes {
-    if (typeof slug === 'string' || slug.length === 1) {
-      return 'pages'
+  public getLocalizedUrlFromParams = (
+    params: Record<string, string>,
+    locale: string,
+    type: ContentTypes = 'pages'
+  ) => {
+    const pagePath = this.getContentPathFromParams(params, locale, type)
+    if (pagePath === null) {
+      return null
+    }
+    
+    return this.getLocalizedUrl(pagePath, locale)
+  }
+
+  public getLocalizedPathFromParams = (
+    params: Record<string, string>,
+    locale: string,
+    type: ContentTypes = 'pages'
+  ) => {
+    const pagePath = this.getContentPathFromParams(params, locale, type)
+    if (pagePath === null) {
+      return null
     }
 
-    const currentPath = slug[0]
-    const paths = this.getContentSlugs(locale)
+    return this.getLocalePath(pagePath, locale)
+  }
 
-    const contentType = Object.keys(paths).find(
-      (key: string) => paths[key as keyof typeof paths] === currentPath
-    )
+  public getContentPathFromParams = (
+    params: Record<string, string>,
+    locale: string,
+    type: ContentTypes = 'pages'
+  ) => {
+    try {
+      const contentRegex = this.getContentSlugs(locale)[type]
+      const pathMatch = pathToRegexp.compile(contentRegex)
+      
+      const paramsData = Object.keys(params).reduce((acc, key) => {
+        const value = params[key].split('/').filter((p) => p !== '')
+        if (!value) {
+          acc[key] = ''
+        } else {
+          acc[key] = value.length === 1 ? value[0] : value
+        }
+        return acc
+      }, {})
+      
+      return pathMatch(paramsData)
+    } catch (error) {
+      console.log(`ContentType: ${type} * error on get path from params`)
+      return null
+    }
+  }
 
-    if (contentType) {
-      return contentType as ContentTypes
+  public getContentTypeByPath (path: string, locale: string) : ContentTypes {
+    const contentTypes = this.getContentSlugs(locale)
+
+    for (const [type, regex] of Object.entries(contentTypes)) {
+      const pathRegex = pathToRegexp.pathToRegexp(regex)
+      if (pathRegex.exec(path)) {
+        return type as ContentTypes
+      }
     }
 
     return 'pages'
   }
 
-  private getSlugStringByType (slug: string | string[], type: ContentTypes) {
+  public getContentParamsByPath (path: string, type: ContentTypes, locale: string) : Record<string, string> {
+    const contentRegex = this.getContentSlugs(locale)[type]
+    const pathMatch = pathToRegexp.match(contentRegex)
+
+    const match = pathMatch(path)
+    if (!match) {
+      throw new Error('Path Error')
+    }
+
+    const params = match.params as Record<string, string>
+
+    return params
+
+  }
+
+  private getPathStringByParamsSlug (slug: string | string[]) {
     if (typeof slug === 'string') {
       return slug.startsWith('/') ? slug : `/${slug}`
     }
-    return type === 'pages'
-      ? `/${slug?.join('/')}`
-      : `/${slug?.slice(1).join('/')}`
-  }
-
-  private getLocaleHome(locale: string) {
-    return locale === this.defaultLocale ? '/' : `/${locale}`
+    return `/${slug?.join('/')}` 
   }
   
 }

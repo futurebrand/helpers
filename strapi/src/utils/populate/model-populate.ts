@@ -36,7 +36,7 @@ export function getModelPopulate(
   layer: number,
   showPrivateFields: boolean = false
 ): IModalPopulateResponse {
-  if (layer <= 1) {
+  if (layer <= 0) {
     return {
       populate: true,
     }

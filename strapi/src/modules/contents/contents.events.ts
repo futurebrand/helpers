@@ -1,6 +1,6 @@
 import { BeforeQueryEvent, BeforeGetSingleEvent, AfterGetSingleEvent, AfterQueryEvent, FilterEvent, IFilter } from "./types";
 
-class ContentModuleEvents<T = IFilter> {
+class ContentModuleEvents<T = any> {
   protected onFilterEvent: FilterEvent<T>
   protected beforeQueryEvent: BeforeQueryEvent
   protected afterQueryEvent: AfterQueryEvent

@@ -1,8 +1,9 @@
 import { ContentTypes, IContentSlugs } from "@futurebrand/types/contents"
 
 export interface ICurrentPath {
+  path: string
+  params: Record<string, string>
   locale: string
-  slug: string
   type: ContentTypes
 }
 

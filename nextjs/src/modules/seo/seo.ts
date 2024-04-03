@@ -5,6 +5,7 @@ import { ContentTypes, ILocalization } from '@futurebrand/types/contents'
 import { getCMSMediaUrl } from '@futurebrand/utils'
 
 import { IGlobalSEO } from '@futurebrand/types/global-options'
+import { ICurrentPath } from '../path/types'
 
 class SEOModule {
   contentService: ContentService
@@ -19,10 +20,11 @@ class SEOModule {
 
   public async getLocalizationCanonicals(routes: ILocalization[], type: ContentTypes) {
     const canonicals = {} as any
+    const pathModule = await PathModule.instantialize()
 
     for (const route of routes) {
-      const { locale, slug } = route
-      const url = PathModule.instance.getContentUrl(slug, locale, type)
+      const { locale } = route
+      const url = pathModule.getLocalizedPathFromParams(route as any, locale, type)
       if (url) {
         canonicals[locale] = url
       }
@@ -33,11 +35,11 @@ class SEOModule {
 
   public async getData() : Promise<Metadata> {
     try {
-      const path = PathModule.instance
+      const path = await PathModule.instantialize()
       const currentPath = path.currentPath
       // Query data
       this.contentService.locale = path.currentLocale
-      const pageData = await this.contentService.getBySlug(currentPath.type, currentPath.slug)
+      const pageData = await this.contentService.getSingle(currentPath.type, currentPath.params)
       const globalSEO = await this.parent
   
       // Get page data
@@ -141,8 +143,18 @@ class SEOModule {
   }
 
   public static async fromPageParams(params: any, parent?: ResolvingMetadata, fixedType?: ContentTypes) { 
+    const pathModule = await PathModule.instantialize()
+    pathModule.getPathFromParams(params, fixedType)
+
     const seo = new SEOModule(parent)
-    PathModule.instance.setPathFromParams(params, fixedType)
+    return await seo.getData()
+  }
+
+  public static async fromCustomPath(path: ICurrentPath, parent?: ResolvingMetadata, fixedType?: ContentTypes) { 
+    const pathModule = await PathModule.instantialize()
+    pathModule.setCurrentPath(path)
+
+    const seo = new SEOModule(parent)
     return await seo.getData()
   }
 }

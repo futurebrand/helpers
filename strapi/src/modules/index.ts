@@ -1,4 +1,5 @@
 export { default as ContentBlockHandler } from './blocks'
 export { default as ContentModule } from './contents'
+export type { IQueryProps, IQueryResponse, IOrder, IPublicationState, IPagination } from './contents'
 export { default as ContentClient } from './contents/client.interface'
 export type { BlockHandleList, BlockHandle } from './blocks/types'

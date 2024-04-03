@@ -10,8 +10,11 @@ export async function loadPathData (slugs?: ILocaleContentSlugs) {
       defaultLocale: '',
       slugs: slugs ?? {},
       currentPath: {
+        params: {
+          path: ''
+        },
+        path: '',
         locale: '',
-        slug: '',
         type: 'pages',
       } as ICurrentPath,
     }
@@ -25,8 +28,11 @@ export async function loadPathData (slugs?: ILocaleContentSlugs) {
     defaultLocale: defaultLocale ?? '',
     slugs: slugs ?? {},
     currentPath: {
+      params: {
+        path: ''
+      },
+      path: '',
       locale: defaultLocale,
-      slug: '/',
       type: 'pages',
     } as ICurrentPath,
   }

@@ -14,7 +14,7 @@ const contentsService = ({strapi}) => {
     return client.getContentService(type)
   }
 
-  const list = async (
+  const query = async (
     type: string,
     page: number,
     filters: any = {},
@@ -28,22 +28,22 @@ const contentsService = ({strapi}) => {
     })
   }
 
-  const listSlugs = async (type: string, locale?: string) => {
+  const sitemap = async (type: string, locale?: string) => {
     const service = getContentService(type)
     return await service.getContentSitemap(locale)
   }
 
-  const findBySlug = async (type: string, slug: string, locale?: string) => {
+  const single = async (type: string, params: Record<string, string>, locale?: string) => {
     const service = getContentService(type)
-    return await service.getContentSingle(slug, locale)
+    return await service.getContentSingle(params, locale)
   }
 
   return {
     client,
     setClient,
-    list,
-    listSlugs,
-    findBySlug
+    query,
+    sitemap,
+    single
   }
 }
 

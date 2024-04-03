@@ -12,7 +12,7 @@ declare module '@futurebrand/types/contents' {
   export interface IContentSlugs {}
 
   export interface IContentSlugMap {
-    slug: string
+    params: Record<string, string>
     date: string
   }
 

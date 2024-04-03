@@ -1,5 +1,4 @@
-
-export type ContentsType = 'modals' | 'pages' | 'posts' | 'tags'
+import ContentBlockHandler from "../blocks";
 
 export type IFilter = Record<string, string | number | boolean>
 
@@ -40,16 +39,20 @@ export interface IQueryResponse {
 }
 
 export type IPublicationState = 'live' | 'preview'
+export type IOrder = Record<string, 'desc' | 'asc'>
+
+export type SinglePathParams = Record<string, string>
 
 export interface ISingleConfigs {
-  fieldName?: string;
+  pathParams?: SinglePathParams;
   populate?: any;
   sitemapFilters?: Record<string, any>;
   state?: IPublicationState;
+  blockHandler?: ContentBlockHandler
 }
 
 export interface IQueryConfigs {
-  order?: Record<string, 'desc' | 'asc'>
+  order?: IOrder
   filters?: Record<string, any>
   populate?: any
   hasPagination?: boolean

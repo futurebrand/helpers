@@ -3,7 +3,7 @@ import { Strapi } from '@strapi/strapi';
 const SERVICE_NAME = 'plugin::futurebrand-strapi-helpers.contents'
 
 export default ({ strapi }: { strapi: Strapi }) => ({
-  list: async (ctx, next) => {
+  query: async (ctx, next) => {
     const query = ctx.query ? ctx.query : {}
     const page = query.page ? Number(query.page) : 1
     const filters = query.filters ?? {}
@@ -12,7 +12,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
 
     try {
       const service = strapi.service(SERVICE_NAME)
-      const response = await service.list(type, page, filters, locale)
+      const response = await service.query(type, page, filters, locale)
 
       if (!response) {
         return ctx.notFound()
@@ -20,17 +20,18 @@ export default ({ strapi }: { strapi: Strapi }) => ({
 
       return response
     } catch (error) {
+      console.error('* Query Error', error)
       return ctx.badRequest(null, error)
     }
   },
-  listSlugs: async (ctx, next) => {
+  sitemap: async (ctx, next) => {
     const query = ctx.query ? ctx.query : {}
     const locale = query.locale ? String(query.locale) : undefined
     const type = query.type ? String(query.type) : undefined
 
     try {
       const service = strapi.service(SERVICE_NAME)
-      const response = await service.listSlugs(type, locale)
+      const response = await service.sitemap(type, locale)
 
       if (!response) {
         return ctx.notFound()
@@ -38,18 +39,19 @@ export default ({ strapi }: { strapi: Strapi }) => ({
 
       return response
     } catch (error) {
+      console.error('* Sitemap Error', error)
       return ctx.badRequest(null, error)
     }
   },
-  findBySlug: async (ctx, next) => {
+  single: async (ctx, next) => {
     const query = ctx.query ? ctx.query : {}
     const locale = query.locale ? String(query.locale) : undefined
     const type = query.type ? String(query.type) : undefined
-    const slug = query.slug ? String(query.slug) : undefined
+    const params = query.params ? query.params : undefined
 
     try {
       const service = strapi.service(SERVICE_NAME)
-      const response = await service.findBySlug(type, slug, locale)
+      const response = await service.single(type, params, locale)
 
       if (!response) {
         return ctx.notFound()
@@ -57,7 +59,7 @@ export default ({ strapi }: { strapi: Strapi }) => ({
 
       return response
     } catch (error) {
-      console.error('findBySlug error', error)
+      console.error('* Single Error', error)
       return ctx.badRequest(null, error)
     }
   },
