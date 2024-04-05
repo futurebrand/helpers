@@ -13,6 +13,7 @@
   "include": [
     // Include the root directory
     "src",
+    "main.d.ts",
     "src/**/*.json",
   ],
   "exclude": [

@@ -8,6 +8,7 @@
     "kind": "plugin"
   },
   "main": "dist/index.js",
+  "types": "./main.d.ts",
   "files": [
     "./dist",
     "./admin",
@@ -17,17 +18,26 @@
   "exports": {
     "./modules": "./dist/modules/index.js",
     "./utils": "./dist/utils/index.js",
+    "./types": "./types/index.d.js",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "modules": ["dist/modules/index.d.ts"],
-      "utils": ["dist/utils/index.d.ts"]
+      "modules": [
+        "dist/modules/index.d.ts"
+      ],
+      "utils": [
+        "dist/utils/index.d.ts"
+      ],
+      "types": [
+        "dist/types/index.d.ts"
+      ]
     }
+    
   },
   "scripts": {
-    "dev": "tsc -p tsconfig.json -w",
-    "build:server": "tsc -p tsconfig.json",
+    "dev": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
+    "build:server": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
     "build:admin": "tsc -p tsconfig.admin.json",
     "build": "npm run build:server && npm run build:admin",
     "prepublish": "npm run build"
@@ -49,6 +59,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^5.3.4",
     "styled-components": "^5.3.6",
+    "tsc-alias": "^1.8.8",
     "typescript": "5.0.4"
   },
   "peerDependencies": {

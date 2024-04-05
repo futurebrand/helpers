@@ -1,6 +1,6 @@
-import ContentBlockHandler from "../blocks";
+import type { IQueryResponse } from '~/types/contents'
 
-export type IFilter = Record<string, string | number | boolean>
+export type SinglePathParams = Record<string, string>
 
 export type IPagination = {
   page: number;
@@ -33,22 +33,16 @@ export interface ISingleParams {
   filters: Record<string, any>
 }
 
-export interface IQueryResponse {
-  results: any[];
-  pagination?: IPagination;
-}
 
 export type IPublicationState = 'live' | 'preview'
 export type IOrder = Record<string, 'desc' | 'asc'>
 
-export type SinglePathParams = Record<string, string>
-
 export interface ISingleConfigs {
   pathParams?: SinglePathParams;
   populate?: any;
+  showOnSitemap?: boolean;
   sitemapFilters?: Record<string, any>;
   state?: IPublicationState;
-  blockHandler?: ContentBlockHandler
 }
 
 export interface IQueryConfigs {
@@ -62,8 +56,8 @@ export interface IQueryConfigs {
 
 export type FilterEvent<T> = (filters: T) => Promise<Record<string, any>>
 
-export type BeforeQueryEvent = (params: IQueryParams) => Promise<IQueryParams>
-export type AfterQueryEvent = (data: IQueryResponse) => Promise<IQueryResponse>
+export type BeforeQueryEvent<T> = (query: IQueryParams, props: IQueryProps<T>) => Promise<IQueryParams>
+export type AfterQueryEvent<T> = (data: IQueryResponse, props: IQueryProps<T>) => Promise<IQueryResponse>
 
-export type BeforeGetSingleEvent = (params: ISingleParams) => Promise<ISingleParams>
-export type AfterGetSingleEvent = (data: any) => Promise<any>
+export type BeforeGetSingleEvent = (query: ISingleParams, params: Record<string, string | string[]>) => Promise<ISingleParams>
+export type AfterGetSingleEvent = (data: any, params: Record<string, string | string[]>) => Promise<any>

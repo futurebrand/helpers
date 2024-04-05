@@ -196,7 +196,8 @@ class PathModule implements IPathCache {
       
       return pathMatch(paramsData)
     } catch (error) {
-      console.log(`ContentType: ${type} * error on get path from params`)
+      console.log(`ContentType: (${type}) - error on get path from params`)
+      console.log({params, error})
       return null
     }
   }

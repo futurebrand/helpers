@@ -1,9 +1,9 @@
-import { BeforeQueryEvent, BeforeGetSingleEvent, AfterGetSingleEvent, AfterQueryEvent, FilterEvent, IFilter } from "./types";
+import { BeforeQueryEvent, BeforeGetSingleEvent, AfterGetSingleEvent, AfterQueryEvent, FilterEvent } from "./types";
 
 class ContentModuleEvents<T = any> {
   protected onFilterEvent: FilterEvent<T>
-  protected beforeQueryEvent: BeforeQueryEvent
-  protected afterQueryEvent: AfterQueryEvent
+  protected beforeQueryEvent: BeforeQueryEvent<T>
+  protected afterQueryEvent: AfterQueryEvent<T>
   protected beforeGetSingleEvent: BeforeGetSingleEvent
   protected afterGetSingleEvent: AfterGetSingleEvent
 
@@ -21,11 +21,11 @@ class ContentModuleEvents<T = any> {
     this.onFilterEvent = event
   }
 
-  public onBeforeQuery(event: BeforeQueryEvent) {
+  public onBeforeQuery(event: BeforeQueryEvent<T>) {
     this.beforeQueryEvent = event
   }
 
-  public onAfterQuery(event: AfterQueryEvent) {
+  public onAfterQuery(event: AfterQueryEvent<T>) {
     this.afterQueryEvent = event
   }
 

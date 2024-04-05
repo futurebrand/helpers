@@ -75,7 +75,7 @@ declare module '@futurebrand/types/contents' {
 
   
   export type IContentResponse<T> = {
-    results: T[]
+    results: T
     pagination: IContentPagination
   }
 

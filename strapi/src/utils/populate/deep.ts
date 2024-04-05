@@ -25,8 +25,9 @@ export function populateCollection(
   layers = 10,
   showPrivateFields = false
 ) {
+  const cacheKey = `${modelUid}-${layers}-${showPrivateFields}`
   // Check if the populate is already in the cache
-  let populate = deepPopulateCache.get(modelUid)
+  let populate = deepPopulateCache.get(cacheKey)
   if (populate == null) {
     // Get the populate object
     populate = getPopulateInModel(modelUid, layers, showPrivateFields)
@@ -34,7 +35,7 @@ export function populateCollection(
       populate = {}
     }
     // Save the populate object in the cache
-    deepPopulateCache.set(modelUid, populate)
+    deepPopulateCache.set(cacheKey, populate)
   }
   // Return the populate object
   return populate

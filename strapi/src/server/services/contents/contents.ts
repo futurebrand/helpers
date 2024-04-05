@@ -1,10 +1,12 @@
 import { ContentClient } from "~/modules"
+import { IContentService } from "~/types/contents"
 
-const contentsService = ({strapi}) => {
-  let client: ContentClient | null = null
+const contentsService = () : IContentService<string> => {
+  let client: ContentClient<string> | null = null
 
-  const setClient = (newClient: ContentClient) => {
+  const register = async (newClient: ContentClient) => {
     client = newClient
+    await client.register()
   }
 
   const getContentService = (type: string) => {
@@ -40,7 +42,7 @@ const contentsService = ({strapi}) => {
 
   return {
     client,
-    setClient,
+    register,
     query,
     sitemap,
     single

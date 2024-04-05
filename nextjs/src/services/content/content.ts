@@ -68,7 +68,7 @@ class ContentService {
     return pageData
   }
 
-  public async query<T extends IContent[]>(
+  public async query<T = IContent[]>(
     type: ContentTypes,
     filters: Record<string, any>,
     page: number = 1,
