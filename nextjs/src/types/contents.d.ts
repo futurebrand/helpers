@@ -11,7 +11,7 @@ declare module '@futurebrand/types/contents' {
   export type ContentTypes = 'pages'
   export interface IContentSlugs {}
 
-  export interface IContentSlugMap {
+  export interface IContentMap {
     params: Record<string, string>
     date: string
   }

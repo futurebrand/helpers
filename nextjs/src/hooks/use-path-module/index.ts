@@ -2,11 +2,11 @@
 
 import { PathModule } from '@futurebrand/modules';
 import { IPathCache } from '@futurebrand/modules/path/types';
-import useCache from '../use-cache';
+import { useCache } from '../use-cache';
 
 const initialData: IPathCache = {}
 
-async function usePathInstance () : Promise<PathModule> {
+export async function usePathModule () : Promise<PathModule> {
   const [getPathData, setPathData] = useCache<IPathCache>(initialData)
 
   const cacheData = getPathData()
@@ -20,4 +20,3 @@ async function usePathInstance () : Promise<PathModule> {
   return instance
 }
 
-export default usePathInstance

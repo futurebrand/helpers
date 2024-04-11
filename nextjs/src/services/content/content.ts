@@ -2,48 +2,54 @@ import { notFound, redirect } from 'next/navigation'
 import { PathModule } from '@futurebrand/modules'
 
 import { IFetchResponse, type FetcherClient, FetcherError } from '@futurebrand/modules/fetcher'
-import type { ContentTypes, IContent, IContentResponse, IContentSlugMap } from '@futurebrand/types/contents'
+import type { IContent, IContentMap, IContentResponse } from '@futurebrand/types/contents'
 import cmsApi from '@futurebrand/strapi/api'
+import { IQueryCallerParams, IServiceCallerProps, ISingleCallerProps } from './types'
+
+const REQUEST_PATH = {
+  QUERY: '/futurebrand-strapi-helpers/contents',
+  MAP: '/futurebrand-strapi-helpers/contents/map',
+  SINGLE: '/futurebrand-strapi-helpers/contents/single',
+}
 
 class ContentService {
   private readonly fetcher: FetcherClient
 
-  constructor(public locale?: string, fetcher?: FetcherClient) {
+  constructor(fetcher?: FetcherClient) {
     this.fetcher = fetcher || cmsApi 
   }
 
-  public async getLocale () {
-    if (!this.locale) {
-      const pathModule = await PathModule.instantialize()
-      this.locale = pathModule.currentPath.locale ?? pathModule.defaultLocale
-    }
-    return this.locale
+  public async getDefaultLocale () {
+    const pathModule = await PathModule.instantialize()
+    return pathModule.currentPath.locale ?? pathModule.defaultLocale
   }
 
-  public async getSingle<T extends IContent>(
-    type: ContentTypes,
-    params: Record<string, string>
-  ): Promise<T> {
+  public async createRequest<T = any>(path: string, props: IServiceCallerProps<any>) {
+    const locale = props.locale ?? await this.getDefaultLocale()
+    return await this.fetcher.get<T>(
+      path,
+      {
+        params: {
+          key: props.key,
+          locale,
+          type: props.type,
+          params: props.params,
+        },
+      }
+    )
+  }
+
+  public async single<T extends IContent>(props: ISingleCallerProps<T>): Promise<T> {
     'use server'
 
-    if (!params) {
-      throw new Error('Slug is required')
+    if (props.serverData) {
+      return props.serverData
     }
 
     let response: IFetchResponse<T>
-    const locale = await this.getLocale()
 
     try {
-      response = await this.fetcher.get(
-        '/futurebrand-strapi-helpers/contents/single',
-        {
-          params: {
-            locale,
-            type,
-            params,
-          },
-        }
-      )
+      response = await this.createRequest<T>(REQUEST_PATH.SINGLE, props)
     } catch (error) {
       const status = (error as FetcherError).response?.status
       if (status === 404) {
@@ -51,14 +57,10 @@ class ContentService {
       }
 
       console.error((error as FetcherError).body)
-      throw new Error(`Error on fetch ${JSON.stringify(params)}`)
+      throw new Error(`Error on get single ${JSON.stringify(props.params)}`)
     }
 
-    const pageData = response?.data
-
-    if (!pageData) {
-      throw new Error('Page attributes not Found')
-    }
+    const pageData = response.data
 
     const contentRedirect = pageData.pageSeo?.redirect
     if (contentRedirect?.enabled) {
@@ -68,43 +70,15 @@ class ContentService {
     return pageData
   }
 
-  public async query<T = IContent[]>(
-    type: ContentTypes,
-    filters: Record<string, any>,
-    page: number = 1,
-  ): Promise<IContentResponse<T>> {
-    const locale = await this.getLocale()
-
-    const response = await this.fetcher.get<IContentResponse<T>>(
-      `/futurebrand-strapi-helpers/contents`,
-      {
-        params: {
-          locale,
-          type,
-          filters,
-          page,
-        },
-      }
-    )
-
+  public async query<T = IContent[]>(props: IServiceCallerProps<IQueryCallerParams>): Promise<IContentResponse<T>> {
+    const response = await this.createRequest<IContentResponse<T>>(REQUEST_PATH.QUERY, props)
     return response.data
   }
 
-  public async getPathsMap(type: ContentTypes) {
+  public async map(props: IServiceCallerProps<undefined>) {
     'use server'
 
-    const locale = await this.getLocale()
-    
-    const response = await this.fetcher.get<IContentSlugMap[]>(
-      `/futurebrand-strapi-helpers/contents/map`,
-      {
-        params: {
-          type,
-          locale,
-        },
-      }
-    )
-
+    const response = await this.createRequest<IContentMap[]>(REQUEST_PATH.MAP, props)
     return response.data
   }
 }

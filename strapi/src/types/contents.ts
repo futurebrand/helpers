@@ -1,20 +1,26 @@
 import { ContentClient } from "~/modules";
-import { IPagination } from "~/modules/contents/types";
+import { IContentKey, IPagination } from "~/modules/contents/types";
 
 export interface IQueryResponse {
   results: any[];
   pagination?: IPagination;
 }
 
-export interface IContentSitemap {
+export interface IContentMap {
   params: any;
   date: string;
+}
+
+export interface IServiceCaller<T = any> {
+  key: IContentKey
+  locale?: string
+  params: T
 }
 
 export interface IContentService<T = string> {
   client: ContentClient | null,
   register: (client: ContentClient) => Promise<void>,
-  query: (type: T, page: number, filters?: any, locale?: string) => Promise<IQueryResponse>
-  sitemap: (type: T, locale?: string) => Promise<false | IContentSitemap[]>,
-  single: (type: T, params: Record<string, string>, locale?: string) => Promise<any>
+  query: <P = any>(type: T, props: IServiceCaller<P>) => Promise<IQueryResponse>
+  map: <P = any>(type: T, props: IServiceCaller<P>) => Promise<false | IContentMap[]>,
+  single: <P = any>(type: T, props: IServiceCaller<P>) => Promise<any>
 }

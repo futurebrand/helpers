@@ -16,5 +16,8 @@ declare module '@futurebrand/types/global-options' {
 
   export interface IDictonary {}
 
-  export interface IGlobalOptions {}
+  export interface IGlobalOptions {
+    globalSEO: IGlobalSEO
+    dictionary: IDictonary
+  }
 }

@@ -14,7 +14,7 @@ export default {
       {
         method: 'GET',
         path: '/contents/map',
-        handler: 'contents.sitemap',
+        handler: 'contents.map',
       },
       {
         method: 'GET',

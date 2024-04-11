@@ -1,18 +1,25 @@
 import { Strapi } from '@strapi/strapi';
+import { DEFAULT_CONTENT_KEY } from '~/modules';
+import { IContentService } from '~/types';
 
 const SERVICE_NAME = 'plugin::futurebrand-strapi-helpers.contents'
 
+function handleDefaultQueryProps (context: any) {
+  const query = context.query ? context.query : {}
+  const key = query.key ? String(query.key) : DEFAULT_CONTENT_KEY
+  const locale = query.locale ? String(query.locale) : undefined
+  const type = query.type ? String(query.type) : undefined
+  const params = query.params ? query.params : {}
+  return { key, locale, type, params }
+}
+
 export default ({ strapi }: { strapi: Strapi }) => ({
   query: async (ctx, next) => {
-    const query = ctx.query ? ctx.query : {}
-    const page = query.page ? Number(query.page) : 1
-    const filters = query.filters ?? {}
-    const locale = query.locale ? String(query.locale) : undefined
-    const type = query.type ? String(query.type) : undefined
+    const { type, ...props } = handleDefaultQueryProps(ctx)
 
     try {
-      const service = strapi.service(SERVICE_NAME)
-      const response = await service.query(type, page, filters, locale)
+      const service = strapi.service(SERVICE_NAME) as IContentService
+      const response = await service.query(type, props)
 
       if (!response) {
         return ctx.notFound()
@@ -24,14 +31,12 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       return ctx.badRequest(null, error)
     }
   },
-  sitemap: async (ctx, next) => {
-    const query = ctx.query ? ctx.query : {}
-    const locale = query.locale ? String(query.locale) : undefined
-    const type = query.type ? String(query.type) : undefined
+  map: async (ctx, next) => {
+    const { type, ...props } = handleDefaultQueryProps(ctx)
 
     try {
-      const service = strapi.service(SERVICE_NAME)
-      const response = await service.sitemap(type, locale)
+      const service = strapi.service(SERVICE_NAME) as IContentService
+      const response = await service.map(type, props)
 
       if (!response) {
         return ctx.notFound()
@@ -44,14 +49,11 @@ export default ({ strapi }: { strapi: Strapi }) => ({
     }
   },
   single: async (ctx, next) => {
-    const query = ctx.query ? ctx.query : {}
-    const locale = query.locale ? String(query.locale) : undefined
-    const type = query.type ? String(query.type) : undefined
-    const params = query.params ? query.params : undefined
+    const { type, ...props } = handleDefaultQueryProps(ctx)
 
     try {
-      const service = strapi.service(SERVICE_NAME)
-      const response = await service.single(type, params, locale)
+      const service = strapi.service(SERVICE_NAME) as IContentService
+      const response = await service.single(type, props)
 
       if (!response) {
         return ctx.notFound()

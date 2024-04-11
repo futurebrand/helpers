@@ -1,305 +1,114 @@
-import { EntityService, type Common } from '@strapi/strapi'
+import { Common, EntityService } from "@strapi/strapi"
+import ContentSingle from "./single/single"
+import ContentQuery from "./query/query"
+import { IQueryCallerParams, IQueryConfigs } from "./query/types"
+import { IContentKey } from "./types"
+import { IServiceCaller } from "~/types"
+import LibraryList from "~/utils/library/library"
+import { ISingleConfigs } from "./single"
 
-import { type IPopulateData } from '../../utils/populate/types'
-import { populateCollection } from '../../utils/populate'
-import ContentBlockHandler from '../blocks'
-import ContentModuleEvents from './contents.events'
-import type { 
-  ISingleConfigs, 
-  IQueryConfigs, 
-  SinglePathParams 
-} from './types'
-import type { IOrder, IPublicationState, IQueryProps } from './types'
-import type { IContentSitemap, IQueryResponse } from '~/types'
+export const DEFAULT_CONTENT_KEY = 'default'
 
-const DEFAULT_PAGE_SIZE = 9
-const DEFAULT_SINGLE_PARAMS: SinglePathParams = { slug: 'slug' }
-const DEFAULT_PUBLICATION_STATE: IPublicationState = 'live'
-const DEFAULT_ORDER: IOrder = { publishedAt: 'desc' }
-
-class ContentModule<T = any> extends ContentModuleEvents<T> {
+class ContentModule {
   protected readonly uid: Common.UID.ContentType
 
-  protected hasQuery: boolean
-  protected queryOrder: IOrder
-  protected queryFilters: Record<string, any>
-  protected queryPopulate: IPopulateData
-  protected queryHasPagination: boolean
-  protected queryPageSize: number
-  protected queryPublicationState: IPublicationState
+  protected queries: LibraryList<IContentKey, ContentQuery>
+  protected singles: LibraryList<IContentKey, ContentSingle>
   
-  protected hasSingle: boolean
-  protected singlePathParams: SinglePathParams
-  protected singlePopulate: IPopulateData
-  protected singleShowOnSitemap: boolean
-  protected singleSitemapFilters: Record<string, any>
-  protected singlePublicationState: IPublicationState
-  protected singleBlockHandlers: ContentBlockHandler[]
-
   constructor(uid: Common.UID.ContentType, private entityService?: EntityService.EntityService) {
-    super()
-
     this.uid = uid
+    this.queries = new LibraryList<IContentKey, ContentQuery>()
+    this.singles = new LibraryList<IContentKey, ContentSingle>()
 
     if (!this.entityService) {
       this.entityService = strapi.entityService
     }
-    
-    const strapiApiConfig = this.getStrapiApiConfig()
-
-    this.hasQuery = false
-    this.queryHasPagination = strapiApiConfig.withCount ?? true
-    this.queryPageSize = strapiApiConfig.defaultLimit ?? DEFAULT_PAGE_SIZE
-    this.queryPopulate = {}
-    this.queryOrder = DEFAULT_ORDER
-    this.queryFilters = {}
-    this.queryPublicationState = DEFAULT_PUBLICATION_STATE
-
-    this.hasSingle = false
-    this.singlePathParams = DEFAULT_SINGLE_PARAMS
-    this.singleSitemapFilters = {
-      pageSeo: {
-        showOnGoogle: true,
-      },
-    }
-    this.singlePublicationState = DEFAULT_PUBLICATION_STATE
-    this.singleBlockHandlers = []
-    this.singleShowOnSitemap = true
-  }
-
-  private getStrapiApiConfig() {
-    return strapi?.config?.api ?? {}
   }
 
   public async register() {
-    if (this.singleBlockHandlers && this.singleBlockHandlers.length > 0) {
-      const contentType = strapi.contentType(this.uid)
-      for (const blockHandler of this.singleBlockHandlers) {
-        if (contentType) {
-          blockHandler.updateContentType(contentType)
-        }  
-      }
+    if (this.singles.length > 0) {
+      await this.singles.map(async (_, single) => {
+        await single.register()
+      })
     }
-    if (!this.singlePopulate) {
-      this.singlePopulate = populateCollection(this.uid)
-    }
-  }
-
-  public addSinglePage(configs: ISingleConfigs = {}) {
-    this.hasSingle = true
-    if (configs.pathParams) {
-      this.singlePathParams = configs.pathParams
-    }
-    if (configs.populate) {
-      this.singlePopulate = configs.populate
-    }
-    if (configs.sitemapFilters) {
-      this.singleSitemapFilters = configs.sitemapFilters
-    }
-    if (configs.state) {
-      this.singlePublicationState = configs.state
-    }
-    if (configs.showOnSitemap != undefined) {
-      this.singleShowOnSitemap = configs.showOnSitemap
+    if (this.queries.length > 0) {
+      await this.queries.map(async (_, query) => {
+        await query.register()
+      })
     }
   }
 
-  public addBlockHandler(blockHandler: ContentBlockHandler) {
-    if (this.singleBlockHandlers.some((handler) => handler.equal(blockHandler))) {
-      return
-    }
-    this.singleBlockHandlers.push(blockHandler)
-  }
-
-  public addQuery(configs: IQueryConfigs = {}) {
-    this.hasQuery = true
-    
-    if (configs.order) {
-      this.queryOrder = configs.order
+  public async query ({key, params, locale}: IServiceCaller<IQueryCallerParams<any>>) {
+    const query = this.queries.get(key)
+    if (!query) {
+      throw new Error(`Query with key ${key} does not exist`)
     }
 
-    if (configs.filters) {
-      this.queryFilters = configs.filters
-    }
-
-    if (configs.populate) {
-      this.queryPopulate = configs.populate
-    }
-
-    if (configs.hasPagination !== undefined) {
-      this.queryHasPagination = configs.hasPagination
-    }
-
-    if (configs.pageSize) {
-      this.queryPageSize = configs.pageSize
-    }
-
-    if (configs.state) {
-      this.queryPublicationState = configs.state
-    }
-  }
-
-  protected async getSingleQuery(params: Record<string, string | string[]>, locale?: string) {
-    const filters = Object.keys(this.singlePathParams).reduce((acc, key) => {
-      
-      let value = Array.isArray(params[key]) ? (params[key] as string[]).join('/') : params[key] as string ?? ''
-      value = value.startsWith('/') ? value : `/${value}`
-      let slugs = [value, `${value}/`]
-
-      if (value === `/${locale}`) {
-        slugs = ['/',...slugs]
-      }
-
-      return {
-        ...acc,
-        [this.singlePathParams[key]]: {
-          $eq: slugs,
-        },
-      }
-    }, {})
-
-    // Create Query Params
-    const query = {
-      filters,
-      ...(locale ? { locale } : {}),
-      populate: this.singlePopulate,
-      limit: 1,
-      publicationState: this.singlePublicationState,
-    }
-
-    return this.beforeGetSingleEvent(query, params)
-  }
-
-  public async getContentSingle(params: Record<string, string>, locale?: string) {
-    if (!this.hasSingle) {
-      throw new Error('This content type does not have a single content')
-    }
-
-    if (!params) {
-      throw new Error('Params is required')
-    }
-
-    const query = await this.getSingleQuery(params, locale)
-    
-    // Find Page
-    const results = await strapi.entityService.findMany(
-      this.uid as any,
-      query as any
-    )
-
-    // Check if page exists
-    if (!results || results.length <= 0) {
-      return false
-    }
-
-    // Get Data
-    const data = results[0]
-
-    // Handle Blocks
-    if (this.singleBlockHandlers && this.singleBlockHandlers.length > 0) {
-      for (const blockHandler of this.singleBlockHandlers) {
-        await blockHandler.sanitizeData(data, locale)
-      }
-    }
-
-    // Return Data
-    return this.afterGetSingleEvent(data, params)
-  }
-
-
-  public async getContentSitemap(locale?: string): Promise<false | IContentSitemap[]>{
-    if (!this.hasSingle) {
-      throw new Error('This content type does not have a single content')
-    }
-
-    const fields = Object.values(this.singlePathParams)
-
-    // Find Page
-    const results = await strapi.entityService.findMany(this.uid, {
-      fields: [...fields, 'updatedAt'],
-      filters: this.singleSitemapFilters,
-      ...(locale ? { locale } : {}),
-      publicationState: this.singlePublicationState,
+    return await query.query({
+      filters: params.filters,
+      page: params.page,
+      locale
     })
-
-    if (!Array.isArray(results)) {
-      return false
-    }
-
-    // Return Data
-    return results.map((content) => ({
-      params: fields.reduce((acc, field) => {
-        return {
-          ...acc,
-          [field]: content[field],
-        }
-      }, {}),
-      date: content.updatedAt,
-    }))
   }
 
-  protected async getQueryParams(props: IQueryProps<T>) {
-    const { filters, page, locale } = props
-
-    if (!this.hasQuery) {
-      throw new Error('This content type does not have a query')
+  public async map ({key, locale}: IServiceCaller<any>) {
+    const single = this.singles.get(key)
+    if (!single) {
+      throw new Error(`Single with key ${key} does not exist`)
     }
 
-    const userFilters = await this.onFilterEvent(filters)
-
-    const filterMerger = {
-      ...this.queryFilters,
-      ...userFilters,
-    }
-
-    // Create Query Params
-    const params = {
-      filters: filterMerger,
-      populate: this.queryPopulate,
-      publicationState: this.queryPublicationState,
-      order: this.queryOrder,
-      ...(this.queryHasPagination ? { 
-        page,
-        pageSize: this.queryPageSize,
-      } : {}),
-      ...(locale ? { locale } : {}),
-    }
-
-    return this.beforeQueryEvent(params, props)
+    return await single.map(locale)
   }
 
-  public async query(props: IQueryProps<T>) {
-    if (!this.hasQuery) {
-      throw new Error('This content type does not have a query')
+  public async single ({key, params, locale}: IServiceCaller<Record<string, any>>) {
+    const single = this.singles.get(key)
+    if (!single) {
+      throw new Error(`Single with key ${key} does not exist`)
     }
 
-    const query = await this.getQueryParams(props)
-    if (this.queryHasPagination) {
-      const { results, pagination } = await strapi.entityService.findPage(
-        this.uid,
-        query as any
-      )
+    return await single.get(params, locale)
+  }
 
-      return this.afterQueryEvent(
-        {
-          results,
-          pagination
-        } as IQueryResponse, 
-        props
-      )
-    } else {
-      const results = await strapi.entityService.findMany(
-        this.uid,
-        query as any
-      ) 
+  public getSingle(key: IContentKey) {
+    return this.singles.get(key)
+  }
 
-      return this.afterQueryEvent(
-        {
-          results
-        } as IQueryResponse, 
-        props
-      )
+  public getQuery<T>(key: IContentKey) {
+    return this.queries.get(key) as ContentQuery<T> | undefined 
+  }
+
+  public addSingle(key: IContentKey, data?: ISingleConfigs | ContentSingle) {
+    if (this.singles.has(key)) {
+      throw new Error(`Single with key ${key} already exists`)
     }
+
+    if (data instanceof ContentSingle) {
+      return this.singles.push(key, data)
+    }
+
+    const newContentSingle = new ContentSingle(this.uid, data, this.entityService)
+    return this.singles.push(key, newContentSingle)
+  }
+
+  public addDefaultSingle(data?: ISingleConfigs | ContentSingle) {
+    return this.addSingle(DEFAULT_CONTENT_KEY, data)
+  }
+
+  public addQuery<T = any>(key: IContentKey, data?: IQueryConfigs | ContentQuery<T>) {
+    if (this.queries.has(key)) {
+      throw new Error(`Query with key ${key} already exists`)
+    }
+
+    if (data instanceof ContentQuery) {
+      return this.queries.push(key, data)
+    }
+
+    const contentQuery = new ContentQuery<T>(this.uid, data, this.entityService)
+    return this.queries.push(key, contentQuery)
+  }
+
+  public addDefaultQuery<T = any>(data?: IQueryConfigs | ContentQuery<T>) {
+    return this.addQuery(DEFAULT_CONTENT_KEY, data)
   }
 }
 

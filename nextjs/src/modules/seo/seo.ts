@@ -38,8 +38,11 @@ class SEOModule {
       const path = await PathModule.instantialize()
       const currentPath = path.currentPath
       // Query data
-      this.contentService.locale = path.currentLocale
-      const pageData = await this.contentService.getSingle(currentPath.type, currentPath.params)
+      const pageData = await this.contentService.single({
+        type: currentPath.type,
+        params: currentPath.params,
+        locale: currentPath.locale,
+      })
       const globalSEO = await this.parent
   
       // Get page data

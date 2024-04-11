@@ -7,6 +7,6 @@ export async function getDynamicI18nConfigs () {
     defaultLocale: pathData.defaultLocale,
     locales: pathData.locales,
     localePrefix: "as-needed",
-    alternateLinks: false
+    alternateLinks: false,
   } as any
 }

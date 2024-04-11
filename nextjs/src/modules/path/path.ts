@@ -97,6 +97,13 @@ class PathModule implements IPathCache {
     return this.currentPath
   }
 
+  public setCurrentLocale(locale: string) {
+    this.currentPath.locale = locale
+    if (this.changeEvent) {
+      this.changeEvent()
+    }
+  }
+
   public getContentTypeSlug(
     type: ContentTypes = 'pages',
     locale?: string

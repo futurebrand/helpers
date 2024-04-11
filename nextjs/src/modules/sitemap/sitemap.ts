@@ -2,6 +2,7 @@ import { type MetadataRoute } from 'next'
 
 import ContentService from '@futurebrand/services/content'
 import PathModule from '../path'
+import { ContentTypes, IContentMap } from '@futurebrand/types/contents'
 
 interface IStaticPath {
   slug: string[]
@@ -10,6 +11,14 @@ interface IStaticPath {
 
 class SiteMapModule {
   constructor () {}
+
+  public async getContentMap(type: ContentTypes, locale: string): Promise<IContentMap[]> {
+    const contentService = new ContentService()
+    return await contentService.map({
+      type,
+      locale
+    })
+  }
 
   public async getGlobalGenerateStaticPath() {
     const pathModule = await PathModule.instantialize()
@@ -23,10 +32,9 @@ class SiteMapModule {
 
     for (const locale of pathModule.locales) {
       // Contents
-      const contentService = new ContentService(locale)
 
       for (const type of singleTypes) {
-        const pathsMap = await contentService.getPathsMap(type)
+        const pathsMap = await this.getContentMap(type, locale)
 
         const slicedIndex = type === 'pages' ? 30 : 10
         const slicedPathsMap = pathsMap.slice(0, slicedIndex)
@@ -63,10 +71,8 @@ class SiteMapModule {
     const urls: MetadataRoute.Sitemap = []
 
     for (const locale of pathModule.locales) {
-      const contentService = new ContentService(locale)
-
       for (const type of singleTypes) {
-        const pathsMap = await contentService.getPathsMap(type)
+        const pathsMap = await this.getContentMap(type, locale)
         for (const pathMap of pathsMap) {
           const url = pathModule.getLocalizedUrlFromParams(pathMap.params, locale, type)
           if (!url) {

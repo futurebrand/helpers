@@ -7,7 +7,7 @@ function cacheFunction<T> (initialValue: T) {
   })
 }
 
-function useCache<T> (initialValue: T) : [() => T, (newData: T) => void] {
+export function useCache<T> (initialValue: T) : [() => T, (newData: T) => void] {
   const ref = cache(cacheFunction<T>(initialValue))
 
   const getter = () => ref().current
@@ -17,5 +17,3 @@ function useCache<T> (initialValue: T) : [() => T, (newData: T) => void] {
 
   return [getter, setter]
 }
-
-export default useCache

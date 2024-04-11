@@ -2,6 +2,10 @@ import cmsApi from '@futurebrand/strapi/api';
 import { ICurrentPath, ILocaleContentSlugs, IPathCache, IStrapiLocales } from "./types";
 
 export async function loadPathData (slugs?: ILocaleContentSlugs) {
+  if (globalThis.__pathCache) {
+    return globalThis.__pathCache
+  }
+  
   const response = await cmsApi.get<IStrapiLocales[]>('/i18n/locales')
 
   if (!response.data && !response.data.length) {
@@ -37,5 +41,6 @@ export async function loadPathData (slugs?: ILocaleContentSlugs) {
     } as ICurrentPath,
   }
 
+  globalThis.__pathCache = data
   return data
 }

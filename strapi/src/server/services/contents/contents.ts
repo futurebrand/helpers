@@ -1,5 +1,5 @@
 import { ContentClient } from "~/modules"
-import { IContentService } from "~/types/contents"
+import { IContentService, IServiceCaller } from "~/types/contents"
 
 const contentsService = () : IContentService<string> => {
   let client: ContentClient<string> | null = null
@@ -16,35 +16,26 @@ const contentsService = () : IContentService<string> => {
     return client.getContentService(type)
   }
 
-  const query = async (
-    type: string,
-    page: number,
-    filters: any = {},
-    locale?: string
-  ) => {
+  const query = async (type: string, props: IServiceCaller) => {
     const service = getContentService(type)
-    return await service.query({
-      page, 
-      filters, 
-      locale
-    })
+    return await service.query(props)
   }
 
-  const sitemap = async (type: string, locale?: string) => {
+  const map = async (type: string, props: IServiceCaller) => {
     const service = getContentService(type)
-    return await service.getContentSitemap(locale)
+    return await service.map(props)
   }
 
-  const single = async (type: string, params: Record<string, string>, locale?: string) => {
+  const single = async (type: string, props: IServiceCaller) => {
     const service = getContentService(type)
-    return await service.getContentSingle(params, locale)
+    return await service.single(props)
   }
 
   return {
     client,
     register,
     query,
-    sitemap,
+    map,
     single
   }
 }

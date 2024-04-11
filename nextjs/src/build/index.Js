@@ -1,7 +1,7 @@
 /**
  * This function is used to get the next build configuration
  * @param {import('./types').IBuildConfig} buildConfigs - The build configuration object
- * @param {any} extraConfigs - Extra configurations
+ * @param {import('next').NextConfig} extraConfigs - Extra configurations
  */
 function getNextBuildConfig (buildConfigs, extraConfigs = {}) {
   const {

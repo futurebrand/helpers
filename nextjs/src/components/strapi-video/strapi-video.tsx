@@ -7,7 +7,7 @@ import type {
 import React, { useEffect, useState } from 'react'
 
 import { getCMSMediaUrl } from '@futurebrand/utils'
-import useIntersectObserver from '@futurebrand/hooks/use-intersect-observer'
+import { useIntersectObserver } from '@futurebrand/hooks/use-intersect-observer'
 
 type Properties = {
   video: IStrapiMedia | IStrapiMediaAttributes
