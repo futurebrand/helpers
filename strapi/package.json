@@ -33,14 +33,12 @@
         "dist/types/index.d.ts"
       ]
     }
-    
   },
   "scripts": {
     "dev": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
     "build:server": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
     "build:admin": "tsc -p tsconfig.admin.json",
-    "build": "npm run build:server && npm run build:admin",
-    "prepublish": "npm run build"
+    "build": "npm run build:server && npm run build:admin"
   },
   "dependencies": {
     "@strapi/design-system": "^1.15.0",

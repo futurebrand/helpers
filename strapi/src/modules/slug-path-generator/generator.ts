@@ -1,12 +1,13 @@
+import { errors } from '@strapi/utils';
 import { Common } from "@strapi/strapi";
 import GeneratePathQueryService from "./query";
-import { IWithSlugAndPathAttributes, IWithSlugParentCollection, IWithSlugParentEvent } from "./types";
+import { IGeneratorFields, IWithSlugAndPathAttributes, IWithSlugParentCollection, IWithSlugParentEvent } from "./types";
 
 class SlugPathGenerator {
   queryService: GeneratePathQueryService
 
-  constructor(private uid: Common.UID.ContentType) {
-    this.queryService = new GeneratePathQueryService(uid)
+  constructor(uid: Common.UID.ContentType, private fields: IGeneratorFields) {
+    this.queryService = new GeneratePathQueryService(uid, fields)
   }
 
   private async updateDisconectedChildrens(
@@ -19,17 +20,15 @@ class SlugPathGenerator {
         continue
       }
   
-      const path = child.slug
+      const path = child[this.fields.slug]
   
-      await strapi.db.query('api::page.page').update({
-        where: { id: child.id },
-        data: { path },
-      })
+      await this.queryService.updatePath(child.id, path)
   
       processed.push(child.id)
-  
-      if (child.children && child.children.length > 0) {
-        await this.updateChildrensPaths(child, path, child.children, processed)
+
+      const nextChildren = child[this.fields.children]
+      if (nextChildren && nextChildren.length > 0) {
+        await this.updateChildrensPaths(child, path, nextChildren, processed)
       }
     }
   }
@@ -47,12 +46,9 @@ class SlugPathGenerator {
       }
   
       const parentPath = this.handleParentSlug(currentPath)
-      const path = `${parentPath}${child.slug}`
-  
-      await strapi.db.query('api::page.page').update({
-        where: { id: child.id },
-        data: { path },
-      })
+      const path = `${parentPath}${child[this.fields.slug]}`
+
+      await this.queryService.updatePath(child.id, path)
   
       processed.push(child.id)
   
@@ -63,7 +59,7 @@ class SlugPathGenerator {
     }
   }
 
-  private async handleParentSlug(path: string) {
+  private handleParentSlug(path: string) {
     let parentPath = path === '/' ? '' : path
     if (parentPath.endsWith('/')) {
       parentPath = parentPath.slice(0, -1)
@@ -71,45 +67,54 @@ class SlugPathGenerator {
     return parentPath
   }
 
-  public async execute(data?: IWithSlugParentEvent) {
-    if (!data?.slug) {
-      return false
-    }
+  private async getElementParent(data: any) {
+    let parent = data.id ? await this.queryService.getParent(data.id) : null
 
-    let parent: IWithSlugParentCollection | null = await this.queryService.getParent(Number(data.id))
-    let children: IWithSlugParentCollection[] = await this.queryService.getChildren(Number(data.id))
+    const connect = data[this.fields.parent]?.connect
+    const disconnect = data[this.fields.parent]?.disconnect
 
-    const disconnectChildren: IWithSlugParentCollection[] = []
-
-    // Update current PATH
-    let path = ''
-
-    if (data.parent?.connect && data.parent.connect.length > 0) {
-      const id = Number(data.parent.connect[0].id)
+    if (connect && connect.length > 0) {
+      const id = Number(connect[0].id)
       parent = await this.queryService.getByID(id)
-    } else if (data.parent?.disconnect && data.parent.disconnect.length > 0) {
+    } else if (disconnect && disconnect.length > 0) {
       parent = null
     }
 
+    return parent
+  }
+
+  private async getElementPath(data: any, parent?: any) {
+    // Update current PATH
+    const slug = String(data[this.fields.slug])
+    let path = slug
+
     if (parent) {
       if (parent.id === data.id) {
-        path = data.slug
+        path = slug
       } else {
-        const parentPath = this.handleParentSlug(parent.path)
-        if (data.slug === '/') {
-          path = `${parentPath}${parentPath}`
+        const parentPath = this.handleParentSlug(parent[this.fields.path])
+        if (slug === '/') {
+          const ramdomChars = Math.random().toString(36).substring(2, 15)
+          path = `${parentPath}-${ramdomChars}`
         } else {
-          path = `${parentPath}${data.slug}`
+          path = `${parentPath}${slug}`
         }
       }
-    } else {
-      path = String(data.slug)
     }
 
-    // Update children PATH
+    return path
+  }
 
-    if (data.children?.connect && data.children.connect.length > 0) {
-      const childrenIds = data.children.connect.map((c) => c.id)
+  private async updateElementChildren(data: any, path: string, parent?: any) {
+    let children = data.id ? await this.queryService.getChildren(data.id) : []
+    const disconnectChildren: IWithSlugParentCollection[] = []
+
+    // Update children PATH
+    const connect = data[this.fields.children]?.connect
+    const disconnect = data[this.fields.children]?.disconnect
+
+    if (connect && connect.length > 0) {
+      const childrenIds = connect.map((c) => c.id)
       for (const id of childrenIds) {
         const child = await this.queryService.getByID(Number(id))
         if (child) {
@@ -118,8 +123,8 @@ class SlugPathGenerator {
       }
     }
 
-    if (data.children?.disconnect && data.children.disconnect?.length > 0) {
-      const childrenIds = data.children.disconnect.map((c) => c.id)
+    if (disconnect && disconnect?.length > 0) {
+      const childrenIds = disconnect.map((c) => c.id)
       children = children.filter((c) => {
         if (childrenIds.includes(c.id)) {
           disconnectChildren.push(c)
@@ -141,10 +146,24 @@ class SlugPathGenerator {
     if (disconnectChildren.length > 0) {
       await this.updateDisconectedChildrens(disconnectChildren, [])
     }
-
-    return path
   }
 
+  public async execute(data?: any) {
+    if (!data?.[this.fields.slug]) {
+      return false
+    }
+
+    try {
+      const parent = await this.getElementParent(data)
+      const path = await this.getElementPath(data, parent)
+      await this.updateElementChildren(data, path, parent)
+      
+      return path
+    } catch (error) {
+      console.error(error)
+      throw new errors.ApplicationError('Error updating path', error)
+    }
+  }
 
 }
 

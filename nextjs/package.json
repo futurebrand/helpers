@@ -1,11 +1,10 @@
 {
   "name": "@futurebrand/helpers-nextjs",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "FutureBrand Helpers",
   "scripts": {
     "build": "tsc && tsc-alias",
-    "dev": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
-    "prepublish": "npm run build"
+    "dev": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")"
   },
   "repository": {
     "type": "git",

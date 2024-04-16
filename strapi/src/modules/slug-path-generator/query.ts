@@ -1,9 +1,14 @@
 import { Common } from "@strapi/strapi"
-import { IWithSlugParentCollection } from "./types"
+import { IGeneratorFields, IWithSlugParentCollection } from "./types"
 
 class GeneratePathQueryService {
-  constructor(private uid: Common.UID.ContentType) {
-     
+  constructor(private uid: Common.UID.ContentType, private fields: IGeneratorFields) {}
+
+  async updatePath(id: number, path: string): Promise<void> {
+    await strapi.db.query(this.uid).update({
+      where: { id },
+      data: { [this.fields.path]: path },
+    })
   }
 
   async getByID(id: number): Promise<IWithSlugParentCollection> {
@@ -18,7 +23,7 @@ class GeneratePathQueryService {
   async getParent(id: number): Promise<IWithSlugParentCollection> {
     const content = await strapi.db.query(this.uid).findOne({
       where: {
-        children: [id],
+        [this.fields.children]: [id],
       },
     })
     return content
@@ -26,7 +31,7 @@ class GeneratePathQueryService {
   
   async getChildren(id: number): Promise<IWithSlugParentCollection[]> {
     const content = await strapi.db.query(this.uid).findMany({
-      where: { parent: id },
+      where: { [this.fields.parent]: id },
     })
     return content
   }

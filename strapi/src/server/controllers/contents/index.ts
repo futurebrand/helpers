@@ -1,3 +1,4 @@
+
 import { Strapi } from '@strapi/strapi';
 import { DEFAULT_CONTENT_KEY } from '~/modules';
 import { IContentService } from '~/types';
@@ -28,7 +29,10 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       return response
     } catch (error) {
       console.error('* Query Error', error)
-      return ctx.badRequest(null, error)
+      return ctx.badRequest(null, {
+        error: JSON.stringify(error),
+        message: String(error.message)
+      })
     }
   },
   map: async (ctx, next) => {
@@ -45,7 +49,10 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       return response
     } catch (error) {
       console.error('* Sitemap Error', error)
-      return ctx.badRequest(null, error)
+      return ctx.badRequest(null, {
+        error: JSON.stringify(error),
+        message: String(error.message)
+      })
     }
   },
   single: async (ctx, next) => {
@@ -62,7 +69,10 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       return response
     } catch (error) {
       console.error('* Single Error', error)
-      return ctx.badRequest(null, error)
+      return ctx.badRequest(null, {
+        error: JSON.stringify(error),
+        message: String(error.message)
+      })
     }
   },
 });

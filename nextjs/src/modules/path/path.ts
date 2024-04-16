@@ -192,6 +192,10 @@ class PathModule implements IPathCache {
       const pathMatch = pathToRegexp.compile(contentRegex)
       
       const paramsData = Object.keys(params).reduce((acc, key) => {
+        if (!params[key] || typeof params[key] !== 'string') {
+          acc[key] = ''
+          return acc
+        }
         const value = params[key].split('/').filter((p) => p !== '')
         if (!value) {
           acc[key] = ''

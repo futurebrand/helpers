@@ -5,8 +5,10 @@ import { ContentBlockHandler } from "~/modules/blocks";
 import { Common, EntityService } from "@strapi/strapi";
 import { populateCollection } from "~/utils/populate";
 import { IContentMap } from "~/types";
+import { errors } from '@strapi/utils'
+import { ValidationError } from 'yup'
 
-const DEFAULT_SINGLE_PARAMS: SinglePathConfig[] = [{ key: 'slug', slugify: true }]
+const DEFAULT_SINGLE_PARAMS: SinglePathConfig[] = [{ key: 'slug', slugify: true, unique: true }]
 const DEFAULT_PUBLICATION_STATE: IPublicationState = 'live'
 
 class ContentSingle {
@@ -66,6 +68,63 @@ class ContentSingle {
     return this
   }
 
+  public async verifyUniqueKeyFields(data: any) {
+    if (data.id) {
+      const localeResponse = await this.entityService.findOne(this.uid as any, data.id, {
+        fields: ['locale']
+      })
+      if (localeResponse && localeResponse.locale) {
+        data.locale = localeResponse.locale
+      }
+    } else {
+      return
+    }
+
+    for (const pathConfig of this.pathConfigs) {
+      const key = pathConfig.key
+      const value = data[key]
+
+      if (!value || pathConfig.unique === false) {
+        continue
+      }
+
+      const query: any = {
+        filters: {
+          [key]: value,
+        },
+      }
+
+      if (data.locale) {
+        query.locale = data.locale
+      }
+
+      if (data.id) {
+        query.filters.id = {
+          $ne: data.id,
+        }
+      }
+
+      const results = await this.entityService.findMany(this.uid as any, query as any)
+
+      if (results && results.length > 0) {
+        const error = new ValidationError('This field must be unique', null, key)
+        throw new errors.YupValidationError(error, 'Validation Error')
+      }
+    }
+  }
+
+  public async updateLifecycle() {
+    strapi.db.lifecycles.subscribe({
+      models: [this.uid],
+      // beforeCreate: async (event) => {
+      //   await this.verifyUniqueKeyFields(event.params.data)
+      // },
+      beforeUpdate: async (event) => {
+        await this.verifyUniqueKeyFields(event.params.data)
+      }
+    })
+  }
+
   public async register() {
     if (this.blockHandlers && this.blockHandlers.length > 0) {
       const contentType = strapi.contentType(this.uid)
@@ -78,6 +137,8 @@ class ContentSingle {
     if (!this.populate) {
       this.populate = populateCollection(this.uid)
     }
+
+    await this.updateLifecycle()
   }
 
   private slugifyPath(value: any, locale: string) {

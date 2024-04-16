@@ -6,6 +6,7 @@ export type onPathParamsGetMap = (value: string) => Promise<any>
 export interface SinglePathConfig {
   key: string,
   slugify: boolean
+  unique?: boolean
   mapField?: boolean
   onGetFilter?: onPathParamsGetFilter
 }

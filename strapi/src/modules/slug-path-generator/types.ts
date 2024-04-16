@@ -4,6 +4,13 @@ export interface IWithSlugAndPathAttributes {
   slug: string
 }
 
+export interface IGeneratorFields {
+  path: string,
+  slug: string
+  parent: string
+  children: string
+}
+
 export interface IWithSlugParentCollection extends IWithSlugAndPathAttributes {
   parent?: IWithSlugParentCollection
   children: IWithSlugParentCollection[]
