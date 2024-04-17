@@ -1,6 +1,6 @@
 {
   "name": "@futurebrand/helpers-nextjs",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "FutureBrand Helpers",
   "scripts": {
     "build": "tsc && tsc-alias",
@@ -21,6 +21,7 @@
     "dist"
   ],
   "exports": {
+    "./plugins": "./dist/plugins/index.js",
     "./components": "./dist/components/index.js",
     "./configs": "./dist/configs/index.js",
     "./hooks": "./dist/hooks/index.js",
@@ -28,9 +29,8 @@
     "./modules": "./dist/modules/index.js",
     "./services": "./dist/services/index.js",
     "./utils": "./dist/utils/index.js",
-    "./strapi": "./dist/strapi/index.js",
+    "./router": "./dist/router/index.js",
     "./contexts": "./dist/contexts/index.js",
-    "./build": "./dist/build/index.js",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -56,14 +56,14 @@
       "utils": [
         "dist/utils/index.d.ts"
       ],
-      "strapi": [
-        "dist/strapi/index.d.ts"
-      ],
       "contexts": [
         "dist/contexts/index.d.ts"
       ],
-      "build": [
-        "dist/build/index.js"
+      "router": [
+        "dist/router/index.d.ts"
+      ],
+      "plugins": [
+        "dist/plugins/types.d.ts"
       ]
     }
   },

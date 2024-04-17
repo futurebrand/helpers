@@ -1,6 +1,6 @@
 import { tv } from 'tailwind-variants'
 
-const MAX_DELAY = 'delay-2000'
+const MAX_DELAY = 'delay-4000'
 
 const ANIMATIONS_DELAY: Record<number, string> = {
   0: 'delay-0',
@@ -13,7 +13,27 @@ const ANIMATIONS_DELAY: Record<number, string> = {
   7: 'delay-1400',
   8: 'delay-1600',
   9: 'delay-1800',
-  10: MAX_DELAY,
+  10: 'delay-2000',
+  11: 'delay-2200',
+  12: 'delay-2400',
+  13: 'delay-2600',
+  14: 'delay-2800',
+  15: 'delay-3000',
+  16: 'delay-3200',
+  17: 'delay-3400',
+  18: 'delay-3600',
+  19: 'delay-3800',
+  20: MAX_DELAY,
+  21: MAX_DELAY,
+  22: MAX_DELAY,
+  23: MAX_DELAY,
+  24: MAX_DELAY,
+  25: MAX_DELAY,
+  26: MAX_DELAY,
+  27: MAX_DELAY,
+  28: MAX_DELAY,
+  29: MAX_DELAY,
+  30: MAX_DELAY,
 }
 
 /**

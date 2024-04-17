@@ -1,4 +1,3 @@
-import { inspect } from 'util'
 import { type IRequestProperties } from './types'
 
 const DEFAULT_ERROR_MESSAGE = 'Erro Interno, tente novamente mais tarde!'
@@ -11,11 +10,11 @@ class FetcherError extends Error {
   ) {
     super()
     // eslint-disable-next-line no-console
-    console.error('* Fetch Error', inspect({
+    console.error('* Fetch Error', {
       request,
       status: response.status,
       body,
-    }, false, null, true))
+    })
     this.message = this.handleErrorMessage()
   }
 

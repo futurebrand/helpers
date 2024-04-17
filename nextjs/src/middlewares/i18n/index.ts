@@ -1,0 +1,1 @@
+export { default as getDynamicI18nConfigs } from './i18n'

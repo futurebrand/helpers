@@ -12,11 +12,11 @@ export interface IQueryCallerParams {
 
 export interface IServiceCallerProps<T> {
   type: ContentTypes,
+  locale: string,
   key?: string,
   params?: T,
-  locale?: string,
 }
 
 export interface ISingleCallerProps<T> extends IServiceCallerProps<any> {
-  serverData?: T
+  previewData?: T
 }

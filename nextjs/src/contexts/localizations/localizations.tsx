@@ -42,7 +42,7 @@ const LocalizationsContextProvider = ({
   const AvaibleRoutes = useMemo(() => {
     return locales.map((locale) => ({
       locale,
-      slug: '/',
+      path: '/',
     }))
   }, [locales])
 
@@ -56,10 +56,10 @@ const LocalizationsContextProvider = ({
             (currentRoute) => currentRoute.locale === route.locale
           )
           if (currentRoute) {
-            if (currentRoute.slug === `/${currentRoute.locale}`) {
+            if (currentRoute.path === `/${currentRoute.locale}`) {
               return {
                 ...currentRoute,
-                slug: '/',
+                path: '/',
               }
             }
             return currentRoute

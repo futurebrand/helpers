@@ -1,6 +1,4 @@
 export * from './use-intersect-observer'
-export * from './use-path-module'
-export * from './use-client-path'
 export * from './use-cache'
 export * from './use-dictionary'
 export * from './use-localizations'

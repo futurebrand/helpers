@@ -1,1 +1,1 @@
-export { default } from './options'
+export { default as OptionsService } from './options'

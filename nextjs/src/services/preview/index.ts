@@ -1,1 +1,2 @@
-export { default } from './preview'
+export { default as PreviewService } from './preview'
+export type * from './types'

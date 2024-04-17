@@ -1,4 +1,4 @@
-import cmsApi from '@futurebrand/strapi/api'
+import { cmsApi } from '@futurebrand/services'
 
 import { FetcherClient } from '@futurebrand/modules/fetcher'
 import { IGlobalStructure, IGlobalOptions } from '@futurebrand/types/global-options'

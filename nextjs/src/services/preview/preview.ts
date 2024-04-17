@@ -4,7 +4,7 @@ import { IPreviewProps } from './types'
 import { ApiResponse } from '@futurebrand/types/strapi'
 import type { FetcherClient  } from '@futurebrand/modules/fetcher'
 import type {IContent } from '@futurebrand/types/contents'
-import cmsApi from '@futurebrand/strapi/api'
+import { cmsApi } from '@futurebrand/services/cms'
 
 class PreviewContentService {
   private readonly fetcher: FetcherClient

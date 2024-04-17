@@ -1,1 +1,1 @@
-export { getHeadersConfiguration, getNextBuildConfig } from './build'
+export * from './router'

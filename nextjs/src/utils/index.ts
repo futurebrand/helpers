@@ -4,7 +4,7 @@ export * from './animation'
 export * from './media'
 // Scroll
 export * from './scroll'
-// Localization
-export * from './localization'
 // String
 export * from './string'
+// Server Cache
+export * from './server-cache'

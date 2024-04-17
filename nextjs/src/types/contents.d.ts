@@ -31,8 +31,7 @@ declare module '@futurebrand/types/contents' {
   // LOCALIZATION
 
   export interface ILocalization {
-    slug: string
-    path?: string
+    path: string
     locale: string
   }
 
