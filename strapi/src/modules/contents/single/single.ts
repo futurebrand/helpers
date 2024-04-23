@@ -70,9 +70,7 @@ class ContentSingle {
 
   public async verifyUniqueKeyFields(data: any) {
     if (data.id) {
-      const localeResponse = await this.entityService.findOne(this.uid as any, data.id, {
-        fields: ['locale']
-      })
+      const localeResponse = await this.entityService.findOne(this.uid as any, data.id)
       if (localeResponse && localeResponse.locale) {
         data.locale = localeResponse.locale
       }
@@ -116,9 +114,9 @@ class ContentSingle {
   public async updateLifecycle() {
     strapi.db.lifecycles.subscribe({
       models: [this.uid],
-      // beforeCreate: async (event) => {
-      //   await this.verifyUniqueKeyFields(event.params.data)
-      // },
+      beforeCreate: async (event) => {
+        await this.verifyUniqueKeyFields(event.params.data)
+      },
       beforeUpdate: async (event) => {
         await this.verifyUniqueKeyFields(event.params.data)
       }

@@ -9,7 +9,7 @@ if (cmsType === 'strapi') {
 
   const adminEnvKey = process.env.adminEnvKey || 'CMS_BACKEND_TOKEN'
   const adminToken = adminEnvKey ? process.env[adminEnvKey] : null
-  const token = adminToken || process.env.cmsFrontendToken
+  const token = adminToken || process.env.cmsPublicToken
 
   api = new Fetcher(basePath, {
     headers: {

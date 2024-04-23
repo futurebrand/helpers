@@ -5,6 +5,6 @@ export type IPagination = {
   total: number;
 }
 export type IPublicationState = 'live' | 'preview'
-export type IOrder = Record<string, 'desc' | 'asc'>
+export type ISort = Record<string, 'desc' | 'asc'>
 
 export type IContentKey = "default" | string

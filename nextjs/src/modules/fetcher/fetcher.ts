@@ -48,9 +48,6 @@ class Fetcher extends FetcherClient {
       headers: {
         Accept: 'application/json',
       },
-      next: {
-        revalidate: 30,
-      },
     }
     let requestUrl = baseUrl
 

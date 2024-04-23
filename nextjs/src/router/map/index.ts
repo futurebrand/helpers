@@ -81,6 +81,7 @@ class RouterMap {
           if (!url) {
             continue
           }
+          
           const date = pathMap.date ? new Date(pathMap.date) : new Date()
           urls.push({
             url,

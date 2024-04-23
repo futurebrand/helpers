@@ -2,20 +2,20 @@ import React, { PropsWithChildren } from 'react';
 
 import { LocalizationsProvider } from './localizations';
 import { DictonaryProvider } from './dictionary';
-import { useServerDictionary } from '@futurebrand/hooks';
+import { IDictonary } from '@futurebrand/types/global-options';
 
 interface Props {
   locales: string[]
   locale: string;
+  dictionary: IDictonary
 }
 
 const ContextsDefault: React.FC<PropsWithChildren<Props>> = async ({
   children,
   locale,
-  locales
+  locales,
+  dictionary
 }) => {
-
-  const dictionary = await useServerDictionary(locale)
 
   return (
     <LocalizationsProvider

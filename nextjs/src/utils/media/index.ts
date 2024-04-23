@@ -1,9 +1,11 @@
 import { IResponsiveImage, IStrapiMedia, IStrapiMediaAttributes } from "@futurebrand/types/strapi"
 import { ImageProps, getImageProps } from "next/image"
 
+const cmsType = process.env.cmsType || 'strapi'
+
 export const getCMSMediaUrl = (path: string) => {
-  if (path && path.startsWith('/')) {
-    return `${process.env.cmsBaseUrl}${path}`
+  if (cmsType === 'strapi' && path && path.startsWith('/')) {
+    return `${process.env.cmsUrl}${path}`
   }
   return path
 }

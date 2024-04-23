@@ -1,5 +1,5 @@
 import type { IQueryResponse } from '~/types/contents'
-import { IOrder, IPublicationState } from '../types'
+import { IPublicationState, ISort } from '../types'
 
 export interface IQueryCallerParams<T> {
   page: number
@@ -17,11 +17,11 @@ export interface IQueryParams {
   filters: any
   populate: any
   publicationState: string
-  order: Record<string, "desc" | "asc">
+  sort: ISort
 }
 
 export interface IQueryConfigs {
-  order?: IOrder
+  sort?: ISort
   filters?: Record<string, any>
   populate?: any
   hasPagination?: boolean

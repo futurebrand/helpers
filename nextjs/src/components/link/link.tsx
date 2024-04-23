@@ -11,7 +11,7 @@ const Link: React.FC<PropsWithChildren<LinkPropeties>> = ({ children, name, clas
   return (
     <NextLink 
       {...(props as LinkPropeties)} 
-      target={blank ? '_blank' : ''}
+      {...(blank ? { target: '_blank' } : {})}
       className={`${name}${className ? ` ${className}` : ''}`}
     >
       {children}

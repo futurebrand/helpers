@@ -37,7 +37,6 @@ export interface IHelpersConfig {
   domains?: string[],
   redirects?: IBuildRedirect[]
   csp?: ICSPConfigs
-  getSlugs: IGetSlugsFunction
 }
 
 export interface HelpersConfig extends NextConfig{

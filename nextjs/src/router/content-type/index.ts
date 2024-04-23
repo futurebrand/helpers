@@ -86,7 +86,8 @@ class RouterContentType {
   }
 
   public getUrl(path: string, locale: string) {
-    return this.router.localization.localizePath(path, locale)
+    const localizedPath = this.router.localization.localizePath(path, locale)
+    return `${process.env.siteUrl}${localizedPath}`
   }
 
   public mapContentTypes() : ContentTypes[] {

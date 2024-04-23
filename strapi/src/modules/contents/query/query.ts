@@ -1,14 +1,14 @@
 import { IQueryResponse } from "~/types"
 import { AfterQueryEvent, BeforeQueryEvent, FilterEvent, IQueryConfigs, IQueryProps } from "./types"
 import { Common, EntityService } from "@strapi/strapi"
-import { IOrder, IPublicationState } from "../types"
+import { ISort, IPublicationState } from "../types"
 
 const DEFAULT_PAGE_SIZE = 9
 const DEFAULT_PUBLICATION_STATE: IPublicationState = 'live'
-const DEFAULT_ORDER: IOrder = { publishedAt: 'desc' }
+const DEFAULT_ORDER: ISort = { publishedAt: 'desc' }
 
 class ContentQuery<T = any> {
-  public order: IOrder
+  public sort: ISort
   public filters: Record<string, any>
   public populate: any
   public hasPagination: boolean
@@ -30,7 +30,7 @@ class ContentQuery<T = any> {
 
     const strapiApiConfig = this.getStrapiApiConfig()
 
-    this.order = configs.order ?? DEFAULT_ORDER
+    this.sort = configs.sort ?? DEFAULT_ORDER
     this.filters = configs.filters ?? {}
     this.populate = configs.populate ?? {}
     this.hasPagination = configs.hasPagination ?? strapiApiConfig.withCount ?? true
@@ -68,7 +68,7 @@ class ContentQuery<T = any> {
       filters: filterMerger,
       populate: this.populate,
       publicationState: this.publicationState,
-      order: this.order,
+      sort: this.sort,
       ...(this.hasPagination ? { 
         page,
         pageSize: this.pageSize,
