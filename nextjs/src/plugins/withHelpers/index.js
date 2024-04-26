@@ -152,6 +152,7 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
         ),
       ],
       deviceSizes: [375, 480, 768, 1024, 1280, 1360, 1440],
+      minimumCacheTTL: 31536000
     },
     headers: csp ? getCSPConfiguration(csp, nextConfig.headers) : nextConfig.headers,
     async redirects() {

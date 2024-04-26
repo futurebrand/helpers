@@ -11,7 +11,6 @@ export interface IQueryProps<T> extends IQueryCallerParams<T> {
 }
 
 export interface IQueryParams {
-  locale?: string
   page?: number
   pageSize?: number
   filters: any

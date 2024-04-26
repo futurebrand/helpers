@@ -68,13 +68,15 @@ class ContentSingle {
     return this
   }
 
-  public async verifyUniqueKeyFields(data: any) {
-    if (data.id) {
-      const localeResponse = await this.entityService.findOne(this.uid as any, data.id)
+  public async verifyUniqueKeyFields({ data, where }: any, isUpdate: boolean) {
+    const id = where?.id ?? data?.id
+    
+    if (id && !data.locale) {
+      const localeResponse = await this.entityService.findOne(this.uid as any, id)
       if (localeResponse && localeResponse.locale) {
         data.locale = localeResponse.locale
       }
-    } else {
+    } else if (!id && isUpdate) {
       return
     }
 
@@ -93,12 +95,12 @@ class ContentSingle {
       }
 
       if (data.locale) {
-        query.locale = data.locale
+        query.filters.locale = data.locale
       }
 
-      if (data.id) {
+      if (id) {
         query.filters.id = {
-          $ne: data.id,
+          $ne: id,
         }
       }
 
@@ -115,10 +117,14 @@ class ContentSingle {
     strapi.db.lifecycles.subscribe({
       models: [this.uid],
       beforeCreate: async (event) => {
-        await this.verifyUniqueKeyFields(event.params.data)
+        if (event.params.data) {
+          await this.verifyUniqueKeyFields(event.params, false)
+        }
       },
       beforeUpdate: async (event) => {
-        await this.verifyUniqueKeyFields(event.params.data)
+        if (event.params.data) {
+          await this.verifyUniqueKeyFields(event.params, true)
+        }
       }
     })
   }
@@ -153,7 +159,7 @@ class ContentSingle {
   }
 
   protected async getContentQuery(params: Record<string, string | string[]>, locale?: string) {
-    const filters = {}
+    const filters: any = {}
 
     for (const path of this.pathConfigs) {
       const key = path.key
@@ -181,10 +187,13 @@ class ContentSingle {
       filters[key] = filter
     }
 
+    if (locale) {
+      filters.locale = locale
+    }
+
     // Create Query Params
     const query = {
       filters,
-      ...(locale ? { locale } : {}),
       populate: this.populate,
       limit: 1,
       publicationState: this.publicationState,
@@ -234,8 +243,10 @@ class ContentSingle {
     // Find Page
     const results = await this.entityService.findMany(this.uid, {
       fields: [...fields, 'updatedAt'],
-      filters: this.mapFilters,
-      ...(locale ? { locale } : {}),
+      filters: {
+        ...(this.mapFilters ?? {}),
+        ...(locale ? { locale } : {}),
+      },
       publicationState: this.publicationState,
     })
 

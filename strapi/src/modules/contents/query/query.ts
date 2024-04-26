@@ -61,6 +61,7 @@ class ContentQuery<T = any> {
     const filterMerger = {
       ...this.filters,
       ...userFilters,
+      ...(locale ? { locale } : {}),
     }
 
     // Create Query Params
@@ -73,7 +74,6 @@ class ContentQuery<T = any> {
         page,
         pageSize: this.pageSize,
       } : {}),
-      ...(locale ? { locale } : {}),
     }
 
     return this.beforeQueryEvent(params, props)

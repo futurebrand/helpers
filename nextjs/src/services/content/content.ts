@@ -2,26 +2,27 @@ import { notFound, redirect } from 'next/navigation'
 
 import { IFetchResponse, type FetcherClient, FetcherError } from '@futurebrand/modules/fetcher'
 import type { IContent, IContentMap, IContentResponse } from '@futurebrand/types/contents'
-import { IQueryCallerParams, IServiceCallerProps, ISingleCallerProps } from './types'
+import { IContentServiceConfigs, IQueryCallerParams, IServiceCallerProps, ISingleCallerProps } from './types'
 
 import { cmsApi, cmsContentPath, ICMSContentApiPath } from '@futurebrand/services/cms'
-
 
 class ContentService {
   private readonly fetcher: FetcherClient
   private readonly contentPath: ICMSContentApiPath
+  private readonly revalidate?: number
 
-  constructor(fetcher?: FetcherClient, contentPath?: ICMSContentApiPath) {
-    this.fetcher = fetcher || cmsApi
-    this.contentPath = contentPath || cmsContentPath
+  constructor(configs: IContentServiceConfigs = {}) {
+    this.fetcher = configs.fetcher || cmsApi
+    this.contentPath = configs.contentPath || cmsContentPath
+    this.revalidate = configs.revalidate
   }
-
 
   public async createRequest<T = any>(path: string, props: IServiceCallerProps<any>) {
     return await this.fetcher.get<T>(
       path,
       {
         params: props,
+        revalidate: this.revalidate
       }
     )
   }

@@ -51,7 +51,13 @@ class Fetcher extends FetcherClient {
     }
     let requestUrl = baseUrl
 
-    const { body, headers, params } = feachConfigs
+    const { body, headers, params, revalidate } = feachConfigs
+
+    if (revalidate || this.revalidate) {
+      (requestConfig as any).next = {
+        revalidate: revalidate ?? this.revalidate
+      }
+    }
 
     if (params) {
       const searchParameter = this.synthesizeParameters(params)

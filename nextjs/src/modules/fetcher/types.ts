@@ -2,6 +2,7 @@ export interface IFetchConfig {
   params?: Record<string, any>
   headers?: Record<string, any>
   body?: Record<string, any>
+  revalidate?: number
 }
 
 export interface IRequestProperties extends globalThis.RequestInit {

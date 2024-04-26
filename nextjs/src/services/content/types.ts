@@ -1,4 +1,12 @@
+import { FetcherClient } from "@futurebrand/modules"
 import { ContentTypes, IContentPagination } from "@futurebrand/types/contents"
+import { ICMSContentApiPath } from "../cms"
+
+export interface IContentServiceConfigs {
+  fetcher?: FetcherClient, 
+  contentPath?: ICMSContentApiPath
+  revalidate?: number
+}
 
 export interface IQueryResponse<T> {
   results: T[]
