@@ -34,8 +34,9 @@ class HelpersRouter {
     this.current.update(router)
   }
 
-  public async getSEO(router: IRoute, parent?: ResolvingMetadata) {
+  public async getSEO(router: IRoute, parent: ResolvingMetadata, revalidate: number) {
     this.setRoute(router)
+    this.seo.setRevalidate(revalidate)
     return this.seo.getData(parent)
   }
 

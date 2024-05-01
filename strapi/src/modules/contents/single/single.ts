@@ -1,5 +1,5 @@
 import { IPopulateData } from "~/utils/populate/types";
-import { BeforeGetSingleEvent, AfterGetSingleEvent, ISingleConfigs, SinglePathConfig } from "./types";
+import { BeforeGetSingleEvent, AfterGetSingleEvent, ISingleConfigs, SinglePathConfig, AfterGetParamsEvent } from "./types";
 import { IPublicationState } from "../types";
 import { ContentBlockHandler } from "~/modules/blocks";
 import { Common, EntityService } from "@strapi/strapi";
@@ -23,6 +23,7 @@ class ContentSingle {
 
   protected beforeGetEvent: BeforeGetSingleEvent
   protected afterGetEvent: AfterGetSingleEvent
+  protected afterGetParams: AfterGetParamsEvent
 
   constructor(
     protected uid: Common.UID.ContentType,
@@ -48,17 +49,21 @@ class ContentSingle {
     // EVENTS
     this.beforeGetEvent = async (params) => params
     this.afterGetEvent = async (data) => data
+    this.afterGetParams = async (data) => data
   }
 
   public onBeforeGetEvent(event: BeforeGetSingleEvent) {
     this.beforeGetEvent = event
-
     return this
   }
 
   public onAfterGetEvent(event: AfterGetSingleEvent) {
     this.afterGetEvent = event
+    return this
+  }
 
+  public onAfterGetParams(event: AfterGetParamsEvent) {
+    this.afterGetParams = event
     return this
   }
 
@@ -117,12 +122,12 @@ class ContentSingle {
     strapi.db.lifecycles.subscribe({
       models: [this.uid],
       beforeCreate: async (event) => {
-        if (event.params.data) {
+        if (event.params?.data) {
           await this.verifyUniqueKeyFields(event.params, false)
         }
       },
       beforeUpdate: async (event) => {
-        if (event.params.data) {
+        if (event.params?.data) {
           await this.verifyUniqueKeyFields(event.params, true)
         }
       }
@@ -232,6 +237,78 @@ class ContentSingle {
 
     // Return Data
     return this.afterGetEvent(data, params)
+  }
+
+  public async unique(id: number, params: any = {}) {    
+    // Find Page
+    const data = await this.entityService.findOne(
+      this.uid as any,
+      id,
+      {
+        populate: this.populate as any,
+      }
+    )
+
+    // Check if page exists
+    if (!data) {
+      return false
+    }
+
+    // Handle Blocks
+    if (this.blockHandlers && this.blockHandlers.length > 0) {
+      for (const blockHandler of this.blockHandlers) {
+        await blockHandler.sanitizeData(data, data.locale)
+      }
+    }
+
+    // Return Data
+    return this.afterGetEvent(data, params)
+  }
+
+  public async getParams(id: number) {    
+    const data = await this.unique(id)
+    if (!data) {
+      return false
+    }
+    // Return Data
+    return await this.afterGetParams(data)
+  }
+
+  public async seo(params: Record<string, string>, locale?: string) {
+    if (!params) {
+      throw new Error('Params is required')
+    }
+
+    const query = await this.getContentQuery(params, locale)
+    
+    // Find Page
+    const results = await this.entityService.findMany(
+      this.uid as any,
+      {
+        ...query,
+        fields: [],
+        populate: {
+          pageSeo: {
+            populate: {
+              metaImage: true,
+              redirect: true
+            }
+          },
+          ...( locale ? {localizations: true}: {})
+        }
+      } as any
+    )
+
+    // Check if page exists
+    if (!results || results.length <= 0) {
+      return false
+    }
+
+    // Get Data
+    const data = results[0]
+
+    // Return Data
+    return data
   }
 
 

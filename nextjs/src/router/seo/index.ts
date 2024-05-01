@@ -1,12 +1,9 @@
 import type { Metadata, ResolvingMetadata, Viewport } from 'next'
-// import PathModule from '@futurebrand/modules/path'
 import { ContentTypes, ILocalization } from '@futurebrand/types/contents'
 import { getCMSMediaUrl } from '@futurebrand/utils'
 
 import { IGlobalSEO } from '@futurebrand/types/global-options'
 import { ContentService } from '@futurebrand/services'
-import CurrentRoute from '../current'
-import RouterContentType from '../content-type'
 import HelpersRouter from '../router'
 
 class RouterSEO {
@@ -18,6 +15,10 @@ class RouterSEO {
   ) {
     // TODO: Implement a mock for the contentService
     this.contentService = contentService ?? new ContentService()
+  }
+
+  public async setRevalidate(value: number) {
+    this.contentService.setRevalidate(value)
   }
 
   public async getLocalizationCanonicals(routes: ILocalization[], type: ContentTypes) {
@@ -43,11 +44,12 @@ class RouterSEO {
     try {
       const currentRoute = this.router.current
       // Query data
-      const pageData = await this.contentService.single({
+      const pageData = await this.contentService.seo({
         type: currentRoute.type,
-        params: currentRoute.params,
+        params: currentRoute.params as any,
         locale: currentRoute.locale,
       })
+
       const globalSEO = await parent
   
       // Get page data

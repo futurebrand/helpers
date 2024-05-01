@@ -75,4 +75,45 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       })
     }
   },
+  seo: async (ctx, next) => {
+    const { type, ...props } = handleDefaultQueryProps(ctx)
+
+    try {
+      const service = strapi.service(SERVICE_NAME) as IContentService
+      const response = await service.seo(type, props)
+
+      if (!response) {
+        return ctx.notFound()
+      }
+
+      return response
+    } catch (error) {
+      console.error('* Single Error', error)
+      return ctx.badRequest(null, {
+        error: JSON.stringify(error),
+        message: String(error.message)
+      })
+    }
+  },
+  preview: async (ctx, next) => {
+    const query = ctx.query ? ctx.query : {}
+    const token = query.token ? String(query.token) : undefined
+
+    try {
+      const service = strapi.service(SERVICE_NAME) as IContentService
+      const response = await service.preview(token)
+
+      if (!response) {
+        return ctx.notFound()
+      }
+
+      return response
+    } catch (error) {
+      console.error('* Single Error', error)
+      return ctx.badRequest(null, {
+        error: JSON.stringify(error),
+        message: String(error.message)
+      })
+    }
+  },
 });

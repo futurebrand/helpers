@@ -9,7 +9,7 @@ import { cmsApi, cmsContentPath, ICMSContentApiPath } from '@futurebrand/service
 class ContentService {
   private readonly fetcher: FetcherClient
   private readonly contentPath: ICMSContentApiPath
-  private readonly revalidate?: number
+  private revalidate?: number
 
   constructor(configs: IContentServiceConfigs = {}) {
     this.fetcher = configs.fetcher || cmsApi
@@ -17,7 +17,11 @@ class ContentService {
     this.revalidate = configs.revalidate
   }
 
-  public async createRequest<T = any>(path: string, props: IServiceCallerProps<any>) {
+  public setRevalidate(revalidate: number) {
+    this.revalidate = revalidate
+  }
+
+  public async createRequest<T = any>(path: string, props: IServiceCallerProps<any> | any) {
     return await this.fetcher.get<T>(
       path,
       {
@@ -58,7 +62,41 @@ class ContentService {
     return pageData
   }
 
+  public async seo<T = IContent>(props: IServiceCallerProps<T>): Promise<T> {
+    'use server'
+
+    let response: IFetchResponse<T>
+
+    try {
+      response = await this.createRequest<T>(this.contentPath.seo, props)
+    } catch (error) {
+      console.error((error as FetcherError).body)
+      throw new Error(`Error on get seo ${JSON.stringify(props.params)}`)
+    }
+  
+    return response.data
+  }
+
+  public async preview<T = IContent>(token: string): Promise<T> {
+    'use server'
+
+    let response: IFetchResponse<T>
+
+    try {
+      response = await this.createRequest<T>(this.contentPath.preview, {
+        token
+      })
+    } catch (error) {
+      console.error((error as FetcherError).body)
+      throw new Error('Error on get preview')
+    }
+  
+    return response.data
+  }
+
   public async query<T = IContent[]>(props: IServiceCallerProps<IQueryCallerParams>): Promise<IContentResponse<T>> {
+    'use server'
+
     const response = await this.createRequest<IContentResponse<T>>(this.contentPath.query, props)
     return response.data
   }

@@ -1,7 +1,16 @@
 export default {
   'admin-api': {
     type: 'admin',
-    routes: []
+    routes: [
+      {
+        method: 'GET',
+        path: '/preview',
+        handler: 'preview.links',
+        config: {
+            policies: ['admin::isAuthenticatedAdmin'],
+        },
+    },
+    ]
   },
   'content-api': {
     type: 'content-api',
@@ -20,6 +29,16 @@ export default {
         method: 'GET',
         path: '/contents/single',
         handler: 'contents.single',
+      },
+      {
+        method: 'GET',
+        path: '/contents/seo',
+        handler: 'contents.seo',
+      },
+      {
+        method: 'GET',
+        path: '/contents/preview',
+        handler: 'contents.preview',
       }
     ],
   },

@@ -3,7 +3,7 @@ import ContentSingle from "./single/single"
 import ContentQuery from "./query/query"
 import { IQueryCallerParams, IQueryConfigs } from "./query/types"
 import { IContentKey } from "./types"
-import { IServiceCaller } from "~/types"
+import  type { IServiceCaller } from "~/types"
 import LibraryList from "~/utils/library/library"
 import { ISingleConfigs } from "./single"
 
@@ -23,9 +23,11 @@ class ContentModule {
     if (!this.entityService) {
       this.entityService = strapi.entityService
     }
+
   }
 
   public async register() {
+
     if (this.singles.length > 0) {
       await this.singles.map(async (_, single) => {
         await single.register()
@@ -67,6 +69,38 @@ class ContentModule {
     }
 
     return await single.get(params, locale)
+  }
+
+  public async unique (key: string, id: number, params: any = {}) {
+    const single = this.singles.get(key)
+
+    if (!single) {
+      throw new Error(`Single with key ${key} does not exist`)
+    }
+
+    return await single.unique(id, params)
+  }
+
+  public async getParams (key: string, id: number) {
+    const single = this.singles.get(key)
+
+    if (!single) {
+      throw new Error(`Single with key ${key} does not exist`)
+    }
+
+    return await single.getParams(id)
+  }
+
+  public async preview(id: number, params: any = {}) {
+    return await this.unique(DEFAULT_CONTENT_KEY, id, params)
+  }
+
+  public async seo ({key, params, locale}: IServiceCaller<Record<string, any>>) {
+    const single = this.singles.get(key)
+    if (!single) {
+      throw new Error(`Single with key ${key} does not exist`)
+    }
+    return await single.seo(params, locale)
   }
 
   public getSingle(key: IContentKey) {
