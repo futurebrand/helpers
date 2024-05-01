@@ -1,6 +1,7 @@
 
 import { Common, Strapi } from '@strapi/strapi';
 import { IContentService } from '~/types'
+import Axios from 'axios'
 
 const SERVICE_NAME = 'plugin::futurebrand-strapi-helpers.contents'
 
@@ -12,18 +13,15 @@ interface ILiveRouteBody {
 
 async function loadFrontendLiveUrl(url: string, body: ILiveRouteBody) : Promise<string | null> {
   try {
-    const response = await fetch(`${url}/api/preview`, {
+    const response = await Axios.post(`${url}/api/preview`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body)
+      body
     })
-    if (!response.ok) {
-      return null
-    }
 
-    const data = await response.json()
+    const data = response.data
     
     return (data as any)?.path ?? null
   
@@ -80,7 +78,11 @@ export default ({ strapi }: { strapi: Strapi }) => ({
       
       return {
         preview,
-        live
+        live,
+        data: {
+          params,
+          type: contentType,
+        }
       }
 
     } catch (error) {

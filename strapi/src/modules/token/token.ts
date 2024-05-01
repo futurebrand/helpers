@@ -5,7 +5,7 @@ class Token<T> {
   secret: string
 
   constructor(secret?: string) {
-    this.secret = secret ?? crypto.randomBytes(64).toString('base64')
+    this.secret = secret ?? crypto.randomBytes(24).toString('base64')
   }
 
   public tokenizer(data: T) {

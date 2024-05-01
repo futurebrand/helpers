@@ -5,10 +5,17 @@ import type { IContentService, IPreviewParams, IServiceCaller } from "~/types/co
 
 const contentsService = () : IContentService<string> => {
   let client: ContentClient<string> | null = null
+  
   const previewToken = new Token<IPreviewParams>()
 
   const register = async (newClient: ContentClient) => {
     client = newClient
+
+    const config: any = await strapi.config.get('plugin.futurebrand-strapi-helpers');
+    if (config.previewSecret && typeof config.previewSecret === 'string') {
+      previewToken.setSecret(config.previewSecret)
+    }
+
     await client.register()
   }
 

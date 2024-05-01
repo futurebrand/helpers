@@ -29,4 +29,4 @@ export interface ISingleConfigs {
 
 export type BeforeGetSingleEvent = (query: ISingleParams, params: Record<string, string | string[]>) => Promise<ISingleParams>
 export type AfterGetSingleEvent = (data: any, params: Record<string, string | string[]>) => Promise<any>
-export type AfterGetParamsEvent = (data: any) => Promise<any>
+export type AfterGetParamsEvent = (params: Record<string, string | string[]>, data: any) => Promise<any>

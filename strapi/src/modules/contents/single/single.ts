@@ -49,7 +49,7 @@ class ContentSingle {
     // EVENTS
     this.beforeGetEvent = async (params) => params
     this.afterGetEvent = async (data) => data
-    this.afterGetParams = async (data) => data
+    this.afterGetParams = async (params) => params
   }
 
   public onBeforeGetEvent(event: BeforeGetSingleEvent) {
@@ -270,8 +270,20 @@ class ContentSingle {
     if (!data) {
       return false
     }
+
+    //
+    const fields = this.pathConfigs
+      .filter(config => config.mapField !== false)
+      .map((config) => config.key)
+    const params = fields.reduce((acc, field) => {
+      return {
+        ...acc,
+        [field]: data[field],
+      }
+    }, {})
+
     // Return Data
-    return await this.afterGetParams(data)
+    return await this.afterGetParams(params, data)
   }
 
   public async seo(params: Record<string, string>, locale?: string) {
