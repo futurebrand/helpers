@@ -101,6 +101,7 @@ class ContentSingle {
 
       if (data.locale) {
         query.filters.locale = data.locale
+        query.locale = data.locale
       }
 
       if (id) {
@@ -202,9 +203,41 @@ class ContentSingle {
       populate: this.populate,
       limit: 1,
       publicationState: this.publicationState,
+      ...(locale ? {locale} : {})
     }
 
     return this.beforeGetEvent(query, params)
+  }
+
+  public async setLocalization(data: any) {
+    if (!data.localizations || !Array.isArray(data.localizations) || data.localizations.length <= 0) {
+      data.localizations = []
+      return
+    }
+
+    const localizations = []
+
+    for (const localization of data.localizations as Array<{id: number, locale: string}>) {
+      try {
+        const params = await this.getParams(localization.id)
+        if (!params) {
+          continue
+        }
+
+        const locale = {
+          id: localization.id,
+          locale: localization.locale,
+          params: params
+        }
+
+        localizations.push(locale)
+        
+      } catch {
+        continue
+      }
+    }
+
+    data.localizations = localizations
   }
 
   public async get(params: Record<string, string>, locale?: string) {
@@ -235,6 +268,9 @@ class ContentSingle {
       }
     }
 
+    // Set Localization
+    await this.setLocalization(data)
+
     // Return Data
     return this.afterGetEvent(data, params)
   }
@@ -260,13 +296,19 @@ class ContentSingle {
         await blockHandler.sanitizeData(data, data.locale)
       }
     }
+    // Set Localization
+    await this.setLocalization(data)
 
     // Return Data
     return this.afterGetEvent(data, params)
   }
 
-  public async getParams(id: number) {    
-    const data = await this.unique(id)
+  public async getParams(id: number) {  
+    const data = await this.entityService.findOne(
+      this.uid as any,
+      id,
+    )
+
     if (!data) {
       return false
     }
@@ -319,8 +361,11 @@ class ContentSingle {
     // Get Data
     const data = results[0]
 
+    // Set Localization
+    await this.setLocalization(data)
+
     // Return Data
-    return data
+    return  data
   }
 
 
@@ -337,6 +382,7 @@ class ContentSingle {
         ...(locale ? { locale } : {}),
       },
       publicationState: this.publicationState,
+      ...(locale ? { locale } : {}),
     })
 
     if (!Array.isArray(results)) {

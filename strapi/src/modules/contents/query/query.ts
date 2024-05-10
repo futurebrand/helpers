@@ -74,6 +74,7 @@ class ContentQuery<T = any> {
         page,
         pageSize: this.pageSize,
       } : {}),
+      ...(locale ? { locale } : {}),
     }
 
     return this.beforeQueryEvent(params, props)

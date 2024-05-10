@@ -28,12 +28,18 @@ class RouterSEO {
      * TODO: Implement Canonicals
      */
     for (const route of routes) {
-      const { locale } = route
-      const path = this.router.contentType.getPathFromParams(route as any, locale, type)
-      const url = this.router.contentType.getUrl(path, locale)
-
-      if (url) {
-        canonicals[locale] = url
+      if (!route.locale) continue
+      try {
+        const { locale } = route
+        const path = this.router.contentType.getPathFromParams(route.params ?? {}, locale, type)
+        const url = this.router.contentType.getUrl(path, locale)
+        
+        if (url) {
+          canonicals[locale] = url
+        }
+      } catch (error) {
+        console.error(error)
+        continue
       }
     }
 
@@ -96,7 +102,7 @@ class RouterSEO {
         },
         alternates: {
           canonical: url,
-          ...canonicals,
+          languages: canonicals
         },
       } as unknown as Metadata
     } catch (error) {

@@ -9,7 +9,10 @@ function getModelAttributes(modelUid: Common.UID.Schema) {
     return attributes
   }
 
-  return model.attributes
+  return {
+    attributes: model.attributes,
+    localized: model.pluginOptions?.i18n?.localized ?? false,
+  }
 }
 
 function isEmptyObject(obj: any) {
@@ -48,9 +51,9 @@ export function getModelPopulate(
     }
   }
 
-  const populate = {}
+  const populate: any = {}
 
-  const attributes = getModelAttributes(modelUid)
+  const { attributes, localized } = getModelAttributes(modelUid)
 
   for (const [key, value] of Object.entries(attributes)) {
     if (!value || ((value as any).private && !showPrivateFields)) {
@@ -80,6 +83,10 @@ export function getModelPopulate(
     } else if (value.type === 'media') {
       populate[key] = true
     }
+  }
+
+  if (localized) {
+    populate.localizations = true
   }
 
   return isEmptyObject(populate) ? { populate: true } : { populate }

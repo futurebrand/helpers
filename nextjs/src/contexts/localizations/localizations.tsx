@@ -1,14 +1,14 @@
 'use client'
 
 import React, { createContext, useCallback, useMemo } from 'react'
-import { ILocalization } from '@futurebrand/types/contents'
+import { ILocalizationRoute } from '@futurebrand/types/contents'
 
 export interface ILocalizationsContext {
   locale: string
   locales: string[]
-  routes: ILocalization[]
+  routes: ILocalizationRoute[]
   updateRoutes: (
-    localizations?: ILocalization[]
+    localizations?: ILocalizationRoute[]
   ) => void
 }
 
@@ -32,7 +32,7 @@ const LocalizationsContextProvider = ({
   locales
 }: React.PropsWithChildren<ILocalizationsContextProps>) => {
   const [currentRoutes, setCurrentRoutes] = React.useState<
-  ILocalization[]
+  ILocalizationRoute[]
   >([])
 
   const canNavigateRoutes = useMemo(() => {
@@ -47,7 +47,7 @@ const LocalizationsContextProvider = ({
   }, [locales])
 
   const updateRoutes = useCallback(
-    (localizations?: ILocalization[]) => {
+    (localizations?: ILocalizationRoute[]) => {
       if (!localizations || localizations.length === 0) {
         setCurrentRoutes(AvaibleRoutes)
       } else {

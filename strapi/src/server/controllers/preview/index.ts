@@ -13,14 +13,7 @@ interface ILiveRouteBody {
 
 async function loadFrontendLiveUrl(url: string, body: ILiveRouteBody) : Promise<string | null> {
   try {
-    const response = await Axios.post(`${url}/api/preview`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body
-    })
-
+    const response = await Axios.post(`${url}/api/preview`, body)
     const data = response.data
     
     return (data as any)?.path ?? null

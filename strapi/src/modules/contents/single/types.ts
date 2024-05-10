@@ -3,6 +3,8 @@ import { IPublicationState } from '../types';
 export type onPathParamsGetFilter = (value: string) => Promise<any>
 export type onPathParamsGetMap = (value: string) => Promise<any>
 
+
+
 export interface SinglePathConfig {
   key: string,
   slugify: boolean

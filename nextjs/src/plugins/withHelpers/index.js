@@ -88,7 +88,7 @@ function getCSPConfiguration (cspConfigs, buildConfig) {
 }
 
 /**
- * @param {import('./types').HelpersConfig} nextConfig
+ * @param {import('./types').NextWithHelpersConfig} nextConfig
  *
  * @returns {import('next').NextConfig}
  * */
@@ -98,7 +98,8 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
     cdn,
     domains,
     csp,
-    redirects
+    redirects,
+    revalidate
   } = futureBrandHelpers
   const siteUrl = handleSiteUrl(futureBrandHelpers.siteUrl)
   const siteHostName = getHostName(siteUrl)
@@ -108,6 +109,7 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
     reactStrictMode: nextConfig.reactStrictMode != null ? nextConfig.reactStrictMode : true,
     poweredByHeader: nextConfig.poweredByHeader != null ? nextConfig.poweredByHeader : false,
     env: {
+      fetchRevalidate: revalidate ? String(revalidate) : undefined,
       cmsType: cms.type,
       cmsUrl: cms.url,
       ...(cms.type === 'strapi' ? { cmsPublicToken: cms.token, adminEnvKey: cms.adminEnvKey ?? '' } : {}),

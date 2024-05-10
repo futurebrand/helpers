@@ -1,6 +1,6 @@
 import { I18nConfig } from "./types";
 import { loadLocalization } from '@futurebrand/services'
-import { ILocalization, type ContentTypes } from '@futurebrand/types/contents'
+import { ILocalization, ILocalizationRoute, type ContentTypes } from '@futurebrand/types/contents'
 import RouterContentType from "../content-type";
 import HelpersRouter from "../router";
 
@@ -30,19 +30,22 @@ class RouterLocalization implements I18nConfig {
   }
 
   public async sanitizeContentLocalization(
-    routes: any[],
+    routes: ILocalization[],
     type: ContentTypes
   ) {
-    const localizations: ILocalization[] = []
+    const localizations: ILocalizationRoute[] = []
   
     for (const route of routes) {
-      const { locale } = route
-
-      const path = this.router.contentType.getPathFromParams(route, locale, type)
-      localizations.push({
-        locale,
-        path: this.localizePath(path, locale)
-      })
+      try {
+        const { locale } = route
+        const path = this.router.contentType.getPathFromParams(route.params, locale, type)
+        localizations.push({
+          locale,
+          path: this.localizePath(path, locale)
+        })
+      } catch {
+        continue
+      }
     }
   
     return localizations

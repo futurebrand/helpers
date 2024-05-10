@@ -37,8 +37,9 @@ export interface IHelpersConfig {
   domains?: string[],
   redirects?: IBuildRedirect[]
   csp?: ICSPConfigs
+  revalidate?: number
 }
 
-export interface HelpersConfig extends NextConfig{
+export interface NextWithHelpersConfig extends NextConfig{
   futureBrandHelpers: IHelpersConfig
 }

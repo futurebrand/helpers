@@ -43,13 +43,20 @@ function getCMSImageProps(
   isMobile: boolean
 ) {
   const attributes = 'url' in media ? media : media.data.attributes
-  const placeholder = attributes.placeholder
+  const placeholder = attributes.mime !== 'image/png' ? attributes.placeholder : 'empty'
+
+  const imageSize = imageProps.fill ? {
+    fill: true
+  } : {
+    width: attributes.width,
+    height: attributes.height
+  }
+
   const { props } = getImageProps({
     ...DEAFULT_IMAGE_PROPS,
     ...imageProps,
+    ...imageSize,
     src: getCMSMediaUrl(attributes.url),
-    width: attributes.width,
-    height: attributes.height,
     placeholder: placeholder && !imageProps.priority ? placeholder : 'empty',
   })
 

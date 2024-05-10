@@ -7,7 +7,9 @@ abstract class FetcherClient {
   public params?: Record<string, any>
 
   constructor(public basePath: string, configs?: IFetchConfig) {
-    this.revalidate = configs?.revalidate
+    const envRevalidate = process.env.fetchRevalidate ? parseInt(process.env.fetchRevalidate) : undefined
+    this.revalidate = configs?.revalidate ?? envRevalidate
+
     this.body = configs?.body
     this.headers = configs?.headers
     this.params = configs?.params

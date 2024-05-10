@@ -31,11 +31,15 @@ declare module '@futurebrand/types/contents' {
   // LOCALIZATION
 
   export interface ILocalization {
-    path: string
+    id: number
     locale: string
+    params: any
   }
 
-  export type ILocalizationData = IStrapiDataComponentList<ILocalization>
+  export interface ILocalizationRoute {
+    path: string,
+    locale: string
+  }
 
   // SEO
 
