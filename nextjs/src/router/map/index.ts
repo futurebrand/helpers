@@ -9,6 +9,8 @@ interface IStaticPath {
   locale: string
 }
 
+type IStaticLimits = Partial<Record<ContentTypes, number>>
+
 class RouterMap {
   constructor (private router: HelpersRouter) {}
 
@@ -20,12 +22,12 @@ class RouterMap {
     })
   }
 
-  public async generateStaticPath(limit: number | false = 10) {
+  public async generateStaticPath(limits: IStaticLimits = {}) {
     if (process.env.NODE_ENV === 'development') {
       return []
     }
     
-    const singleTypes = this.router.contentType.mapContentTypes()
+    const singleTypes = Object.keys(limits) as ContentTypes[]
     
     const paths: IStaticPath[] = []
 
@@ -34,11 +36,12 @@ class RouterMap {
 
       for (const type of singleTypes) {
         const pathsMap = await this.getContentMap(type, locale)
+        const limit = limits[type]
 
-        const slicedPathsMap = limit === false ? pathsMap : pathsMap.slice(0, limit)
+        const slicedPathsMap = pathsMap.slice(0, limit)
 
         for (const pathMap of slicedPathsMap) {
-          const path = this.router.contentType.getPathFromParams(pathMap.params, locale, type)
+          const path = this.router.getPath(pathMap.params, locale, type)
           
           if (!path) {
             continue
@@ -75,8 +78,7 @@ class RouterMap {
       for (const type of singleTypes) {
         const pathsMap = await this.getContentMap(type, locale)
         for (const pathMap of pathsMap) {
-          const path = this.router.contentType.getPathFromParams(pathMap.params, locale, type)
-          const url = this.router.contentType.getUrl(path, locale)
+          const url = this.router.getUrl(pathMap.params, locale, type)
 
           if (!url) {
             continue

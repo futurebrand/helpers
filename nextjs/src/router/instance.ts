@@ -1,4 +1,3 @@
-import { cache } from "@futurebrand/utils";
 import { IRouterConfig } from "./types";
 
 import HelpersRouter from './router'
@@ -9,4 +8,4 @@ async function getRouter(configs: IRouterConfig) {
   return router
 }
 
-export default cache('helpers-router', getRouter)
+export default getRouter

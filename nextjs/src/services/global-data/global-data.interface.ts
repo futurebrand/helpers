@@ -3,7 +3,7 @@ import { cmsApi } from '@futurebrand/services'
 import { FetcherClient } from '@futurebrand/modules/fetcher'
 import { IGlobalStructure, IGlobalOptions } from '@futurebrand/types/global-options'
 
-abstract class GlobalClient  {
+abstract class GlobalDataClient  {
   private readonly fetcher: FetcherClient
   public readonly locale: string
   public initialized: boolean
@@ -26,4 +26,4 @@ abstract class GlobalClient  {
 
 }
 
-export default GlobalClient
+export default GlobalDataClient

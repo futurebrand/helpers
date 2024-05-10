@@ -1,13 +1,13 @@
+
 import { ContentTypes } from "@futurebrand/types/contents"
-import { RouterSlugItem, RouterSlugs } from "../types"
+import type { RouterSlugList, RouterSlugs } from "../types"
 import * as pathToRegexp from 'path-to-regexp'
-import RouterLocalization from "../localization"
 import HelpersRouter from "../router"
 
 class RouterContentType {
   constructor (private router: HelpersRouter, public slugs: RouterSlugs) {}
 
-  public getLocaleSlugs (locale: string) : RouterSlugItem {
+  public getLocaleSlugs (locale: string) : RouterSlugList {
     let contentTypes = this.slugs[locale]
     if (!contentTypes) {
       const defaultLocale = this.router.localization.defaultLocale || Object.keys(this.slugs)[0]
@@ -55,7 +55,7 @@ class RouterContentType {
   }
 
   public getPathFromParams = (
-    params: Record<string, string>,
+    params: any,
     locale: string,
     type: ContentTypes = 'pages'
   ) => {
@@ -64,7 +64,10 @@ class RouterContentType {
       const pathMatch = pathToRegexp.compile(contentRegex)
       
       const paramsData = Object.keys(params).reduce((acc, key) => {
-        if (!params[key] || typeof params[key] !== 'string') {
+        if (Array.isArray(params[key])) {
+          acc[key] = params[key];
+          return acc
+        } else if (!params[key] || typeof params[key] !== 'string') {
           acc[key] = ''
           return acc
         }
@@ -85,9 +88,19 @@ class RouterContentType {
     }
   }
 
-  public getUrl(path: string, locale: string) {
-    const localizedPath = this.router.localization.localizePath(path, locale)
-    return `${process.env.siteUrl}${localizedPath}`
+  public getLocalizedPath = (
+    params: any,
+    locale: string,
+    type: ContentTypes = 'pages'
+  ) => {
+    const path = this.getPathFromParams(params, locale, type)
+    return this.router.localization.localizePath(path, locale)
+  }
+
+  public getPathUrl(path: string) {
+    let pathString = path.startsWith('/') ? path : `/${path}`
+    pathString = pathString.endsWith('/') ? pathString : `${pathString}/`
+    return `${process.env.siteUrl}${pathString}`
   }
 
   public mapContentTypes() : ContentTypes[] {

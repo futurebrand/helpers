@@ -31,8 +31,7 @@ class RouterSEO {
       if (!route.locale) continue
       try {
         const { locale } = route
-        const path = this.router.contentType.getPathFromParams(route.params ?? {}, locale, type)
-        const url = this.router.contentType.getUrl(path, locale)
+        const url = this.router.getUrl(route.params ?? {}, locale, type)
         
         if (url) {
           canonicals[locale] = url

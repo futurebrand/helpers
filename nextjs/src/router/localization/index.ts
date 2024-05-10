@@ -20,7 +20,12 @@ class RouterLocalization implements I18nConfig {
   }
 
   public localizePath(path: string, locale: string) {
+    if (path == null) {
+      throw new Error('Path is required')
+    }
+
     path = path.startsWith('/') ? path : `/${path}`
+    path = path.endsWith('/') ? path : `${path}/`
   
     if (path.startsWith(`/${locale}`)) {
       return path
@@ -38,7 +43,7 @@ class RouterLocalization implements I18nConfig {
     for (const route of routes) {
       try {
         const { locale } = route
-        const path = this.router.contentType.getPathFromParams(route.params, locale, type)
+        const path = this.router.getPath(route.params, locale, type)
         localizations.push({
           locale,
           path: this.localizePath(path, locale)

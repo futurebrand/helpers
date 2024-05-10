@@ -1,8 +1,9 @@
 import { ApiResponse } from '@futurebrand/types/strapi';
 import { IGlobalOptions, IGlobalStructure } from '@futurebrand/types/global-options';
-import GlobalClient from './options.interface';
+import GlobalDataClient from './global-data.interface';
+import { IGlobalData } from './types';
 
-class OptionsService extends GlobalClient {
+class GlobalData extends GlobalDataClient {
   private optionsState: IGlobalOptions | null = null
   private structureState: IGlobalStructure | null = null
 
@@ -50,10 +51,13 @@ class OptionsService extends GlobalClient {
     this.structureState = data
   }
 
-  public static async instantiate(locale: string) {
-    const options = new OptionsService(locale)
-    await options.initialize()
-    return options
+  public static async load(locale: string) : Promise<IGlobalData> {
+    const instance = new GlobalData(locale)
+    await instance.initialize()
+    return {
+      options: instance.options,
+      structure: instance.structure,
+    } 
   }
 
   // GETTERS
@@ -73,4 +77,4 @@ class OptionsService extends GlobalClient {
   }
 }
 
-export default OptionsService
+export default GlobalData

@@ -1,23 +1,15 @@
 "use server"
 
-import { useCache } from '@futurebrand/hooks'
-import { OptionsService } from '@futurebrand/services'
-import { IDictonary } from '@futurebrand/types/global-options'
+import { useLocale } from 'next-intl';
+import { useGlobalData } from '@futurebrand/hooks'
 
-async function loadDictionary(locale: string) {
-  const options = await OptionsService.instantiate(locale)
-  return options.options.dictionary
-}
+export async function useServerDictionary(locale?: string) {
+  const optionsLocale = locale ?? useLocale()
 
-export async function useServerDictionary(locale: string) {
-  const [getCacheDictionary, updateDictionary] = useCache<IDictonary | null>(null)
-
-  const value = getCacheDictionary()
-  if (!value) {
-    const dictionary = await loadDictionary(locale)
-    updateDictionary(dictionary)
-    return dictionary
+  if (!optionsLocale) {
+    throw new Error('useServerDictionary: locale not provided and no locale found in cache.')
   }
 
-  return value
+  const globalData = await useGlobalData(optionsLocale)
+  return globalData.options.dictionary
 }

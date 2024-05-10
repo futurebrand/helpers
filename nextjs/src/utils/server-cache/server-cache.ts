@@ -1,3 +1,4 @@
+
 let cache = global.__helpersCache
 
 if (!cache || !cache.current) {

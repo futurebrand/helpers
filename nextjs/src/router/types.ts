@@ -1,7 +1,7 @@
 import { ContentTypes } from "@futurebrand/types/contents"
 
-export type RouterSlugItem = Record<string, string>
-export type RouterSlugs = Record<string, RouterSlugItem>
+export type RouterSlugList = Partial<Record<ContentTypes, string>>
+export type RouterSlugs = Record<string, RouterSlugList>
 
 export interface IDynamicRoute {
   locale: string

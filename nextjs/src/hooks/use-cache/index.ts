@@ -1,19 +1,19 @@
 
-import { cache } from 'react';
+import { unstable_cache as cache } from 'next/cache';
 
-function cacheFunction<T> (initialValue: T) {
-  return () => ({
-    current: initialValue
-  })
+interface ICacheConfigs {
+  tags?: string[]
+  revalidate?: number | false
 }
 
-export function useCache<T> (initialValue: T) : [() => T, (newData: T) => void] {
-  const ref = cache(cacheFunction<T>(initialValue))
+const fetchRevalidate = process.env.fetchRevalidate
+const revalidate = fetchRevalidate ? Number(fetchRevalidate) : 60
 
-  const getter = () => ref().current
-  const setter = (newData: T) => {
-    ref().current = newData
-  }
+export async function useCache<T> (key: string, cb: () => Promise<T>, configs: ICacheConfigs = {}) : Promise<T> {
+  const CachedFunction = cache(cb, [key], {
+    revalidate: configs.revalidate ?? revalidate,
+    tags: configs.tags ?? [key]
+  })
 
-  return [getter, setter]
+  return await CachedFunction()
 }

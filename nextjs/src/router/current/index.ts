@@ -15,7 +15,7 @@ class CurrentRoute {
     if ('type' in route) {
       this.type = route.type
       this.params = route.params
-      this.path = this.router.contentType.getPathFromParams(this.params, this.locale, this.type)
+      this.path = this.router.getPath(this.params, this.locale, this.type)
     } else {
       this.path = route.slug ? `/${route.slug.join('/')}` : '/'
       this.type = this.router.contentType.getTypeFromString(this.path, this.locale)
@@ -24,7 +24,7 @@ class CurrentRoute {
   }
 
   public get url() {
-    return this.router.contentType.getUrl(this.path, this.locale)
+    return this.router.getUrl(this.params, this.locale, this.type)
   }
 }
 
