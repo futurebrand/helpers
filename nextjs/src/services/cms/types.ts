@@ -4,7 +4,11 @@ export interface ICMSContentApiPath {
   single: string,
   seo: string,
   preview: string,
-  locales: string,
+  global: {
+    locales: string,
+    data: string,
+    seo: string,
+  }
 }
 
 export interface ILocalesApiData {

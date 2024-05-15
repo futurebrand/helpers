@@ -1,12 +1,13 @@
 import { cmsApi } from '@futurebrand/services'
 import { I18nConfig, ILocalesApiData } from './types'
 import contentApiPath from './path'
+import cacheFunction from '@futurebrand/utils/server-cache/memory-cache'
 
 async function loadLocalization () : Promise<I18nConfig> {
   const fetchRevalidate = process.env.fetchRevalidate
   const revalidate = fetchRevalidate ? Number(fetchRevalidate) : 60
   
-  const response = await cmsApi.get<ILocalesApiData[]>(contentApiPath.locales, {
+  const response = await cmsApi.get<ILocalesApiData[]>(contentApiPath.global.locales, {
     revalidate
   })
   
@@ -29,4 +30,4 @@ async function loadLocalization () : Promise<I18nConfig> {
 }
 
 
-export default loadLocalization
+export default cacheFunction('cms-locales', loadLocalization)

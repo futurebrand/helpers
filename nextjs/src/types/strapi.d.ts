@@ -34,7 +34,7 @@ declare module '@futurebrand/types/strapi' {
     caption: string
   }
 
-  export type IStrapiMedia = IStrapiDataComponent<IStrapiMediaAttributes>
+  export type IStrapiMedia = IStrapiMediaAttributes
   export type IStrapiMediaList =
     IStrapiDataComponentList<IStrapiMediaAttributes>
   export type IStrapiNullnableMedia =

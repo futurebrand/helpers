@@ -7,9 +7,12 @@ import { populateCollection } from "~/utils/populate";
 import { IContentMap } from "~/types";
 import { errors } from '@strapi/utils'
 import { ValidationError } from 'yup'
+import { LibraryCache } from "~/utils";
 
 const DEFAULT_SINGLE_PARAMS: SinglePathConfig[] = [{ key: 'slug', slugify: true, unique: true }]
 const DEFAULT_PUBLICATION_STATE: IPublicationState = 'live'
+
+const DEFAULT_SEO_CACHE_REVALIDATE = 1000 * 60 * 60 // 60 minutes
 
 class ContentSingle {
   public pathConfigs: SinglePathConfig[]
@@ -20,6 +23,8 @@ class ContentSingle {
 
   public publicationState: IPublicationState
   public blockHandlers: ContentBlockHandler[]
+
+  private seoCacheLibrary: LibraryCache
 
   protected beforeGetEvent: BeforeGetSingleEvent
   protected afterGetEvent: AfterGetSingleEvent
@@ -50,6 +55,11 @@ class ContentSingle {
     this.beforeGetEvent = async (params) => params
     this.afterGetEvent = async (data) => data
     this.afterGetParams = async (params) => params
+    //
+    const seoCacheDisabled = configs.disableSeoCache ?? false
+    const seoCacheRevalidate = configs.seoCacheRevalidate ?? DEFAULT_SEO_CACHE_REVALIDATE
+    
+    this.seoCacheLibrary = new LibraryCache(seoCacheRevalidate, seoCacheDisabled)
   }
 
   public onBeforeGetEvent(event: BeforeGetSingleEvent) {
@@ -328,10 +338,24 @@ class ContentSingle {
     return await this.afterGetParams(params, data)
   }
 
+
   public async seo(params: Record<string, string>, locale?: string) {
     if (!params) {
       throw new Error('Params is required')
     }
+
+    const cache = this.seoCacheLibrary.fromObject({
+      locale,
+      ...params,
+    })
+
+    if (cache) {
+      const cacheData = cache.get()
+      if (cacheData) {
+        return cacheData
+      }
+    }
+    
 
     const query = await this.getContentQuery(params, locale)
     
@@ -363,6 +387,11 @@ class ContentSingle {
 
     // Set Localization
     await this.setLocalization(data)
+
+    // Set Cache
+    if (cache) {
+      cache.set(data)
+    }
 
     // Return Data
     return  data

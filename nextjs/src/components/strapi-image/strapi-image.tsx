@@ -17,7 +17,7 @@ const StrapiImage: React.FC<Properties> = ({
   fill,
   ...rest
 }) => {
-  const attributes = ((image as IStrapiMedia)?.data?.attributes || image) as IStrapiMediaAttributes
+  const attributes = 'url' in image ? image : (image as any).data?.attributes as IStrapiMediaAttributes
 
   if (!attributes) {
     return

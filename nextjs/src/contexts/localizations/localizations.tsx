@@ -2,8 +2,10 @@
 
 import React, { createContext, useCallback, useMemo } from 'react'
 import { ILocalizationRoute } from '@futurebrand/types/contents'
+import { I18nConfig } from '@futurebrand/services'
 
 export interface ILocalizationsContext {
+  defaultLocale: string
   locale: string
   locales: string[]
   routes: ILocalizationRoute[]
@@ -21,15 +23,15 @@ export const LocalizationsContext = createContext<ILocalizationsContext>(
   initialState as ILocalizationsContext
 )
 
-export interface ILocalizationsContextProps {
+export interface ILocalizationsContextProps extends I18nConfig {
   locale: string
-  locales: string[]
 }
 
 const LocalizationsContextProvider = ({
   children,
   locale,
-  locales
+  locales,
+  defaultLocale
 }: React.PropsWithChildren<ILocalizationsContextProps>) => {
   const [currentRoutes, setCurrentRoutes] = React.useState<
   ILocalizationRoute[]
@@ -76,6 +78,7 @@ const LocalizationsContextProvider = ({
   return (
     <LocalizationsContext.Provider
       value={{
+        defaultLocale,
         locale,
         locales,
         routes: canNavigateRoutes,

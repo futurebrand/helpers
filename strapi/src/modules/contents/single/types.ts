@@ -3,8 +3,6 @@ import { IPublicationState } from '../types';
 export type onPathParamsGetFilter = (value: string) => Promise<any>
 export type onPathParamsGetMap = (value: string) => Promise<any>
 
-
-
 export interface SinglePathConfig {
   key: string,
   slugify: boolean
@@ -27,6 +25,8 @@ export interface ISingleConfigs {
   public?: boolean;
   mapFilters?: Record<string, any>;
   state?: IPublicationState;
+  disableSeoCache?: boolean;
+  seoCacheRevalidate?: number;
 }
 
 export type BeforeGetSingleEvent = (query: ISingleParams, params: Record<string, string | string[]>) => Promise<ISingleParams>

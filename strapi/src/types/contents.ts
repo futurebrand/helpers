@@ -1,5 +1,5 @@
 import { Common } from "@strapi/strapi";
-import { ContentClient } from "~/modules";
+import { ContentClient, GlobalClient } from "~/modules";
 import { IContentKey, IPagination } from "~/modules/contents/types";
 
 export interface IQueryResponse {
@@ -37,4 +37,11 @@ export interface IContentService<T = string> {
   getParams: (type: string, id: number) => Promise<any>
   unique: (type: T, id: number) => Promise<any>
   findContentType: (api: Common.UID.ContentType) => string
+}
+
+export interface IGlobalService {
+  data: (locale: string) => Promise<{}>;
+  seo: (locale: string) => Promise<any>;
+  getClient: () => GlobalClient;
+  register: (newClient: GlobalClient) => Promise<void>;
 }

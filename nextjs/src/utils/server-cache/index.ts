@@ -1,1 +1,2 @@
-export { default as cache } from './server-cache'
+export { default as createCacheContext } from './cache-context'
+export { default as cacheFunction } from './memory-cache'

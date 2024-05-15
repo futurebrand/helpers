@@ -1,79 +1,29 @@
-import { ApiResponse } from '@futurebrand/types/strapi';
-import { IGlobalOptions, IGlobalStructure } from '@futurebrand/types/global-options';
+
 import GlobalDataClient from './global-data.interface';
-import { IGlobalData } from './types';
+import { IGlobalData, IGlobalSEO } from '@futurebrand/types/global-options';
+import { IGlobalDataServiceConfigs } from './types';
 
 class GlobalData extends GlobalDataClient {
-  private optionsState: IGlobalOptions | null = null
-  private structureState: IGlobalStructure | null = null
-
-  public async initialize() {
-    if (!this.initialized) {
-      await Promise.all([
-        this.loadOptions(),
-        this.loadStructure(),
-      ])
-      this.initialized = true
-    }
+  constructor(configs: IGlobalDataServiceConfigs = {}) {
+    super(configs)
   }
 
-  private async loadOptions () {
-    const response: ApiResponse<IGlobalOptions> = await this.api.get('/global-option', {
+  public async get(locale?: string): Promise<IGlobalData> {
+    const response = await this.api.get<IGlobalData>(this.path.data, {
       params: {
-        populate: 'deep',
-        locale: this.locale,
-      }
+        locale,
+      },
     })
-
-    const data = response.data.data.attributes
-  
-    if (!response.data?.data?.attributes) {
-      throw new Error('Global Options data not found')
-    }
-
-    this.optionsState = data
+    return response.data
   }
 
-  private async loadStructure () {
-    const response: ApiResponse<IGlobalStructure> = await this.api.get('/global-structure', {
+  public async seo(locale?: string): Promise<IGlobalSEO> {
+    const response = await this.api.get<IGlobalSEO>(this.path.seo, {
       params: {
-        populate: 'deep',
-        locale: this.locale,
-      }
+        locale,
+      },
     })
-
-    const data = response.data.data.attributes
-  
-    if (!response.data?.data?.attributes) {
-      throw new Error('Global Options data not found')
-    }
-
-    this.structureState = data
-  }
-
-  public static async load(locale: string) : Promise<IGlobalData> {
-    const instance = new GlobalData(locale)
-    await instance.initialize()
-    return {
-      options: instance.options,
-      structure: instance.structure,
-    } 
-  }
-
-  // GETTERS
-  
-  public get options() {
-    if (!this.initialized) {
-      throw new Error('Options not initialized')
-    }
-    return this.optionsState as IGlobalOptions
-  }
-
-  public get structure() {
-    if (!this.initialized) {
-      throw new Error('Options not initialized')
-    }
-    return this.structureState as IGlobalStructure
+    return response.data
   }
 }
 

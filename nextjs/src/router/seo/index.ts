@@ -2,8 +2,7 @@ import type { Metadata, ResolvingMetadata, Viewport } from 'next'
 import { ContentTypes, ILocalization } from '@futurebrand/types/contents'
 import { getCMSMediaUrl } from '@futurebrand/utils'
 
-import { IGlobalSEO } from '@futurebrand/types/global-options'
-import { ContentService } from '@futurebrand/services'
+import { ContentService, GlobalDataService } from '@futurebrand/services'
 import HelpersRouter from '../router'
 
 class RouterSEO {
@@ -110,8 +109,11 @@ class RouterSEO {
     }
   }
 
-  public getGlobalMetadata(seo: IGlobalSEO) : Metadata {
+  public async getGlobalMetadata(locale: string) : Promise<Metadata> {
     const siteUrl = String(process.env.siteUrl)
+    const service = new GlobalDataService()
+
+    const seo = await service.seo(locale)
 
     if (!seo) {
       return {
@@ -119,7 +121,7 @@ class RouterSEO {
       }
     }
 
-    const ogImage = seo.metaImage.data.attributes
+    const ogImage = seo.metaImage
     const other = {} as any
 
     for (const meta of seo.customMetas) {
@@ -149,14 +151,12 @@ class RouterSEO {
     } as unknown as Metadata
   }
 
-  public getViewport(globalSEO: IGlobalSEO) : Viewport {
-
-    if (!globalSEO) {
-      return {}
-    }
+  public async getViewport(locale: string) : Promise<Viewport> {
+    const service = new GlobalDataService()
+    const seo = await service.seo(locale)
 
     return {
-      themeColor: globalSEO.themeColor,
+      themeColor: seo.themeColor,
     }
   }
 }

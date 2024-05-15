@@ -17,6 +17,16 @@ export default {
     routes: [
       {
         method: 'GET',
+        path: '/global',
+        handler: 'global.data',
+      },
+      {
+        method: 'GET',
+        path: '/global/seo',
+        handler: 'global.seo',
+      },
+      {
+        method: 'GET',
         path: '/contents',
         handler: 'contents.query',
       },

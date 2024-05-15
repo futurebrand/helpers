@@ -1,6 +1,7 @@
-import type { IGlobalOptions, IGlobalStructure } from "@futurebrand/types/global-options"
+import { FetcherClient } from "@futurebrand/modules";
+import { ICMSContentApiPath } from "../cms";
 
-export interface IGlobalData {
-  options: IGlobalOptions
-  structure: IGlobalStructure
+export interface IGlobalDataServiceConfigs {
+  fetcher?: FetcherClient
+  contentPath?: ICMSContentApiPath
 }

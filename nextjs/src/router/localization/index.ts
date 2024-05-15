@@ -1,7 +1,7 @@
 import { I18nConfig } from "./types";
 import { loadLocalization } from '@futurebrand/services'
 import { ILocalization, ILocalizationRoute, type ContentTypes } from '@futurebrand/types/contents'
-import RouterContentType from "../content-type";
+
 import HelpersRouter from "../router";
 
 class RouterLocalization implements I18nConfig {

@@ -42,7 +42,7 @@ function getCMSImageProps(
   imageProps: Partial<ImageProps> = {},
   isMobile: boolean
 ) {
-  const attributes = 'url' in media ? media : media.data.attributes
+  const attributes = 'url' in media ? media : (media as any).data?.attributes as IStrapiMediaAttributes
   const placeholder = attributes.mime !== 'image/png' ? attributes.placeholder : 'empty'
 
   const imageSize = imageProps.fill ? {

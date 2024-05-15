@@ -4,6 +4,7 @@ let contentApiPath: ICMSContentApiPath
 
 const cmsType = process.env.cmsType || 'strapi'
 
+const strapiGlobalPath = '/futurebrand-strapi-helpers/global'
 const strapiContentsPath = '/futurebrand-strapi-helpers/contents'
 
 if (cmsType === 'strapi') {
@@ -13,7 +14,11 @@ if (cmsType === 'strapi') {
     single: strapiContentsPath + '/single',
     seo: strapiContentsPath + '/seo',
     preview: strapiContentsPath + '/preview',
-    locales: '/i18n/locales',
+    global: {
+      locales: '/i18n/locales',
+      data: strapiGlobalPath,
+      seo: strapiGlobalPath + '/seo',
+    }
   }
 } else if (cmsType === 'wp' || cmsType === 'wordpress') {
   /**
@@ -25,7 +30,11 @@ if (cmsType === 'strapi') {
     single: '',
     seo: '',
     preview: '',
-    locales: '',
+    global: {
+      locales: '',
+      data: '',
+      seo: '',
+    }
   }
 }
 

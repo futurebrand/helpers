@@ -14,7 +14,7 @@ type Properties = {
 } & React.VideoHTMLAttributes<HTMLVideoElement>
 
 const CmsVideo: React.FC<Properties> = ({ video, autoPlay, ...rest }) => {
-  const attributes = ((video as IStrapiMedia)?.data?.attributes || video) as IStrapiMediaAttributes
+  const attributes = 'url' in video ? video : (video as any).data?.attributes as IStrapiMediaAttributes
 
   const [isVisible, videoReference] = useIntersectObserver()
   const [isLoaded, setIsLoaded] = useState(false)

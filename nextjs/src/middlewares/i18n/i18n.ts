@@ -1,5 +1,5 @@
 
-import { loadLocalization } from "@futurebrand/services";
+import loadLocalization from "@futurebrand/services/cms/locales";
 
 async function getDynamicI18nConfigs () {
   const localization = await loadLocalization()
