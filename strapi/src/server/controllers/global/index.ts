@@ -40,7 +40,25 @@ export default ({ strapi }: { strapi: Strapi }) => ({
 
       return response
     } catch (error) {
-      console.error('* Single Error', error)
+      console.error('* Global SEO Error', error)
+      return ctx.badRequest(null, {
+        error: JSON.stringify(error),
+        message: String(error.message)
+      })
+    }
+  },
+  locales: async (ctx, next) => {
+    try {
+      const service = strapi.service(SERVICE_NAME) as IGlobalService
+      const response = await service.locales()
+
+      if (!response) {
+        return ctx.notFound()
+      }
+
+      return response
+    } catch (error) {
+      console.error('* Global Locales Error', error)
       return ctx.badRequest(null, {
         error: JSON.stringify(error),
         message: String(error.message)

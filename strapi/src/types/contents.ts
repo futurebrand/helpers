@@ -42,6 +42,7 @@ export interface IContentService<T = string> {
 export interface IGlobalService {
   data: (locale: string) => Promise<{}>;
   seo: (locale: string) => Promise<any>;
+  locales: () => Promise<any>;
   getClient: () => GlobalClient;
   register: (newClient: GlobalClient) => Promise<void>;
 }

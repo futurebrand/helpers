@@ -28,9 +28,17 @@ const globalService = () : IGlobalService => {
     return client.getSeoData(locale)
   }
 
+  const locales = async () => {
+    if (!client) {
+      throw new Error('Global client not initialized')
+    }
+    return client.getLocales()
+  }
+
   return {
     data,
     seo,
+    locales,
     getClient,
     register
   }

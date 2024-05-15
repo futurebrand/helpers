@@ -5,7 +5,7 @@ import { IPopulateData } from "~/utils/populate/types"
 export interface IGlobalConfigs {
   seo: Common.UID.ContentType
   data: Record<string, Common.UID.ContentType>
-  revalidate: number
+  revalidate?: number | false
 }
 
 

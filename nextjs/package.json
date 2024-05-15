@@ -1,6 +1,6 @@
 {
   "name": "@futurebrand/helpers-nextjs",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "FutureBrand Helpers",
   "scripts": {
     "build": "tsc && tsc-alias",

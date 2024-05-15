@@ -10,6 +10,7 @@ function getModelAttributes(modelUid: Common.UID.Schema) {
   }
 
   return {
+    options: model.options ?? {},
     attributes: model.attributes,
     localized: model.pluginOptions?.i18n?.localized ?? false,
   }

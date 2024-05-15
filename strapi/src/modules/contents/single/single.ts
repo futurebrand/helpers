@@ -12,7 +12,6 @@ import { LibraryCache } from "~/utils";
 const DEFAULT_SINGLE_PARAMS: SinglePathConfig[] = [{ key: 'slug', slugify: true, unique: true }]
 const DEFAULT_PUBLICATION_STATE: IPublicationState = 'live'
 
-const DEFAULT_SEO_CACHE_REVALIDATE = 1000 * 60 * 60 // 60 minutes
 
 class ContentSingle {
   public pathConfigs: SinglePathConfig[]
@@ -24,7 +23,7 @@ class ContentSingle {
   public publicationState: IPublicationState
   public blockHandlers: ContentBlockHandler[]
 
-  private seoCacheLibrary: LibraryCache
+  private cacheLibrary: LibraryCache
 
   protected beforeGetEvent: BeforeGetSingleEvent
   protected afterGetEvent: AfterGetSingleEvent
@@ -55,11 +54,8 @@ class ContentSingle {
     this.beforeGetEvent = async (params) => params
     this.afterGetEvent = async (data) => data
     this.afterGetParams = async (params) => params
-    //
-    const seoCacheDisabled = configs.disableSeoCache ?? false
-    const seoCacheRevalidate = configs.seoCacheRevalidate ?? DEFAULT_SEO_CACHE_REVALIDATE
-    
-    this.seoCacheLibrary = new LibraryCache(seoCacheRevalidate, seoCacheDisabled)
+    //    
+    this.cacheLibrary = new LibraryCache('single-cache', configs.seoCacheRevalidate)
   }
 
   public onBeforeGetEvent(event: BeforeGetSingleEvent) {
@@ -83,18 +79,26 @@ class ContentSingle {
     return this
   }
 
-  public async verifyUniqueKeyFields({ data, where }: any, isUpdate: boolean) {
-    const id = where?.id ?? data?.id
+  public async onLifecycleEvent({ data, where }: any, isUpdate: boolean) {
+    const id = Number(where?.id ?? data?.id)
     
-    if (id && !data.locale) {
+    if (!Number.isNaN(id) && !data.locale) {
       const localeResponse = await this.entityService.findOne(this.uid as any, id)
       if (localeResponse && localeResponse.locale) {
         data.locale = localeResponse.locale
       }
-    } else if (!id && isUpdate) {
+    } else if (Number.isNaN(id) && isUpdate) {
       return
     }
+    
+    await this.verifyUniqueKeyFields(data, id)
 
+    if (data.pageSeo && data.locale) {
+      await this.onUpdateSEO(id, data.locale)
+    }
+  }
+
+  public async verifyUniqueKeyFields(data: any, id?: number) {
     for (const pathConfig of this.pathConfigs) {
       const key = pathConfig.key
       const value = data[key]
@@ -134,12 +138,13 @@ class ContentSingle {
       models: [this.uid],
       beforeCreate: async (event) => {
         if (event.params?.data) {
-          await this.verifyUniqueKeyFields(event.params, false)
+          await this.onLifecycleEvent(event.params, false)
         }
       },
       beforeUpdate: async (event) => {
-        if (event.params?.data) {
-          await this.verifyUniqueKeyFields(event.params, true)
+        const params = event?.params
+        if (params?.data) {
+          await this.onLifecycleEvent(params, true)
         }
       }
     })
@@ -338,63 +343,64 @@ class ContentSingle {
     return await this.afterGetParams(params, data)
   }
 
+  private async getCacheFromParams(cacheType = 'seo', params: Record<string, string>, locale?: string) {
+    return await this.cacheLibrary.fromObject({
+      cacheType,
+      locale: locale ?? 'default',
+      ...params,
+    })
+  }
+
+  public async onUpdateSEO(id: number, locale: string) {
+    const params = await this.getParams(id)
+    const cache = await this.getCacheFromParams('seo', params, locale)
+    if (cache) {
+      cache.invalidate()
+    }
+  }
 
   public async seo(params: Record<string, string>, locale?: string) {
     if (!params) {
-      throw new Error('Params is required')
+      throw new Error('Params is required in SEO')
     }
 
-    const cache = this.seoCacheLibrary.fromObject({
-      locale,
-      ...params,
-    })
+    const cache = await this.getCacheFromParams('seo', params, locale)
 
-    if (cache) {
-      const cacheData = cache.get()
-      if (cacheData) {
-        return cacheData
+    return cache.staleWhileRevalidate(async () => {
+      const query = await this.getContentQuery(params, locale)
+    
+      // Find Page
+      const results = await this.entityService.findMany(
+        this.uid as any,
+        {
+          ...query,
+          fields: [],
+          populate: {
+            pageSeo: {
+              populate: {
+                metaImage: true,
+                redirect: true
+              }
+            },
+            ...( locale ? {localizations: true}: {})
+          }
+        } as any
+      )
+  
+      // Check if page exists
+      if (!results || results.length <= 0) {
+        return false
       }
-    }
-    
+  
+      // Get Data
+      const data = results[0]
+  
+      // Set Localization
+      await this.setLocalization(data)
 
-    const query = await this.getContentQuery(params, locale)
-    
-    // Find Page
-    const results = await this.entityService.findMany(
-      this.uid as any,
-      {
-        ...query,
-        fields: [],
-        populate: {
-          pageSeo: {
-            populate: {
-              metaImage: true,
-              redirect: true
-            }
-          },
-          ...( locale ? {localizations: true}: {})
-        }
-      } as any
-    )
-
-    // Check if page exists
-    if (!results || results.length <= 0) {
-      return false
-    }
-
-    // Get Data
-    const data = results[0]
-
-    // Set Localization
-    await this.setLocalization(data)
-
-    // Set Cache
-    if (cache) {
-      cache.set(data)
-    }
-
-    // Return Data
-    return  data
+      // Return Data
+      return  data
+    })   
   }
 
 

@@ -9,9 +9,11 @@ class LibraryList<K extends string, T = any> {
   }
 
   public push(key: K, value: T) {
-    this.data[key] = value
-    this.length++
+    if (!this.data[key]) {
+      this.length++
+    }
 
+    this.data[key] = value
     return this.data[key]
   }
 
@@ -46,10 +48,13 @@ class LibraryList<K extends string, T = any> {
     return Object.entries(this.data)
   }
 
-  public async map(callback: (key: K, value: T) => Promise<void> | void) {
+  public async map<R = any>(callback: (key: K, value: T) => Promise<R> | R) {
+    const value: R[] = []
     for (const key in this.data) {
-      await callback(key, this.data[key])
+      const response = await callback(key, this.data[key])
+      value.push(response)
     }
+    return value
   }
 }
 

@@ -1,55 +1,76 @@
+import { getPluginConfigs } from "~/configs/plugin/plugin"
 import { LibraryList } from "../library"
 import MemoryCache from "./memory-cache"
 
+interface ICacheData<T> {
+  cache: MemoryCache<T>
+  expires: number
+}
+
+const __cacheLibrary = new LibraryList<string, ICacheData<any>>()
+
 class LibraryCache<T = any> {
-  private library: LibraryList<string, MemoryCache<T>>
-  public expires: number
+  public maxDuration: number
+  public revalidate: number | false
 
-  constructor (private revalidate: number, private disabled: boolean = false) {
-    this.library = new LibraryList()
-    this.expires = Date.now() + revalidate
-
-    if (process.env.NODE_ENV === 'development') {
-      this.disabled = true
-    }
+  constructor (public key: string, revalidate?: number | false) {
+    const configs = getPluginConfigs()
+    this.revalidate = revalidate || (configs.cacheRevalidate ?? 60)
+    this.maxDuration = configs.cacheMaxDuration
   }
 
-  public fromObject (data: Record<string, any>) : MemoryCache<T> | null {
+  public async fromObject (data: Record<string, any>, revalidate?: number | false) {
     const key = Object.keys(data).reduce((acc, field) => {
       return `${acc}_${field}=${JSON.stringify(data[field])}`
-    }, '')
-    return this.get(key)
+    }, this.key)
+    return this.getCache(key, revalidate)
   }
 
-  public isExpired() {
-    return !this.expires || this.expires < Date.now()
+  public async fromKey (key: string, revalidate?: number | false)  {
+    const cacheKey = `${this.key}_${key}`
+    return this.getCache(cacheKey, revalidate)
   }
 
-  public get (key: string) : MemoryCache<T> | null {
-    if (this.disabled) {
-      return null
-    }    
-
-    if (this.isExpired()) {
-      this.invalidate()
-      this.expires = Date.now() + this.revalidate
-    }
+  private async getCache (key: string, revalidate?: number | false) : Promise<MemoryCache<T>> {
+    await this.invalidateExpiredCaches()
     
-    let cache = this.library.get(key)
-    if (cache) {
-      return cache
+    let record = __cacheLibrary.get(key)
+    if (record) {
+      return record.cache
     }
 
-    cache = new MemoryCache(this.revalidate)
+    const cache = new MemoryCache(revalidate ?? this.revalidate)
+    record = {
+      cache,
+      expires: Date.now() + this.maxDuration
+    }
 
-    this.library.push(key, cache)
-
+    __cacheLibrary.push(key, record)
     return cache
   }
 
-  public invalidate () : void {
-    this.library.map((key, cache) => {
-      cache?.invalidate()
+
+  public async invalidate () {
+    await __cacheLibrary.map(async (cacheKey) => {
+      if (cacheKey.startsWith(this.key)) {
+        __cacheLibrary.remove(cacheKey)
+      }
+    })
+  }
+
+  public async invalidateKey (key: string) {
+    __cacheLibrary.remove(key)
+  }
+
+  public async invalidateExpiredCaches () {
+    await __cacheLibrary.map(async (key, record) => {
+      if (!record) {
+        return
+      }
+
+      if (record.expires < Date.now() || !record.cache.data) {
+        __cacheLibrary.remove(key)
+      }
     })
   }
 }

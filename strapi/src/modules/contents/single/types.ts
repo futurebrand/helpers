@@ -25,8 +25,7 @@ export interface ISingleConfigs {
   public?: boolean;
   mapFilters?: Record<string, any>;
   state?: IPublicationState;
-  disableSeoCache?: boolean;
-  seoCacheRevalidate?: number;
+  seoCacheRevalidate?: number | false;
 }
 
 export type BeforeGetSingleEvent = (query: ISingleParams, params: Record<string, string | string[]>) => Promise<ISingleParams>

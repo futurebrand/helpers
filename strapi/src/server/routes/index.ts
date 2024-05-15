@@ -27,6 +27,11 @@ export default {
       },
       {
         method: 'GET',
+        path: '/global/locales',
+        handler: 'global.locales',
+      },
+      {
+        method: 'GET',
         path: '/contents',
         handler: 'contents.query',
       },

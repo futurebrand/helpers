@@ -15,7 +15,7 @@ if (cmsType === 'strapi') {
     seo: strapiContentsPath + '/seo',
     preview: strapiContentsPath + '/preview',
     global: {
-      locales: '/i18n/locales',
+      locales: strapiGlobalPath + '/locales',
       data: strapiGlobalPath,
       seo: strapiGlobalPath + '/seo',
     }
