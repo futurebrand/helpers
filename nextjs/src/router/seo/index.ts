@@ -73,8 +73,6 @@ class RouterSEO {
         : globalSEO?.openGraph?.images?.[0] ?? null
       const url = currentRoute.url
   
-      const { viewport, themeColor, colorScheme, ...globals } = globalSEO as any
-  
       const canonicals = await this.getLocalizationCanonicals(localizations, currentRoute.type)
       
       const title = metaTitle || globalSEO.title.absolute
@@ -82,7 +80,6 @@ class RouterSEO {
 
       // Return SEO data
       return {
-        ...globals,
         title,
         description,
         robots: {

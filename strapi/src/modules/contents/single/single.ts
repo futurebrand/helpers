@@ -80,20 +80,23 @@ class ContentSingle {
   }
 
   public async onLifecycleEvent({ data, where }: any, isUpdate: boolean) {
-    const id = Number(where?.id ?? data?.id)
+    let id = Number(where?.id ?? data?.id)
+    if (Number.isNaN(id)) {
+      id = 0
+    }
     
-    if (!Number.isNaN(id) && !data.locale) {
+    if (id && !data.locale) {
       const localeResponse = await this.entityService.findOne(this.uid as any, id)
       if (localeResponse && localeResponse.locale) {
         data.locale = localeResponse.locale
       }
-    } else if (Number.isNaN(id) && isUpdate) {
+    } else if (!id && isUpdate) {
       return
     }
     
     await this.verifyUniqueKeyFields(data, id)
 
-    if (data.pageSeo && data.locale) {
+    if (id && data.pageSeo && data.locale) {
       await this.onUpdateSEO(id, data.locale)
     }
   }
@@ -137,8 +140,9 @@ class ContentSingle {
     strapi.db.lifecycles.subscribe({
       models: [this.uid],
       beforeCreate: async (event) => {
-        if (event.params?.data) {
-          await this.onLifecycleEvent(event.params, false)
+        const params = event?.params
+        if (params?.data) {
+          await this.onLifecycleEvent(params, false)
         }
       },
       beforeUpdate: async (event) => {

@@ -1,3 +1,5 @@
+"use server"
+
 import { IRouterConfig } from "./types";
 
 import HelpersRouter from './router'

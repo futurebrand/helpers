@@ -43,6 +43,8 @@ class Fetcher extends FetcherClient {
     feachConfigs: IFetchConfig = {},
     method = 'GET'
   ): Promise<IFetchResponse<T>> {
+    "use server"
+
     const requestConfig: RequestInit = {
       method,
       headers: {
@@ -106,10 +108,12 @@ class Fetcher extends FetcherClient {
   }
 
   public async post<T = any>(path: string, config?: IFetchConfig) {
+    "use server"
     return this.fetch<T>(this.getApiUrl(path), this.mescleConfig(config), 'POST')
   }
 
   public async get<T = any>(path: string, config?: IFetchConfig) {
+    "use server"
     return this.fetch<T>(this.getApiUrl(path), this.mescleConfig(config), 'GET')
   }
 }
