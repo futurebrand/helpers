@@ -44,9 +44,9 @@ const LocalizationsContextProvider = ({
   const AvaibleRoutes = useMemo(() => {
     return locales.map((locale) => ({
       locale,
-      path: '/',
+      path: locale === defaultLocale ? '/' : `/${locale}`,
     }))
-  }, [locales])
+  }, [locales, defaultLocale])
 
   const updateRoutes = useCallback(
     (localizations?: ILocalizationRoute[]) => {
