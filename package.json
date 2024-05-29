@@ -1,6 +1,6 @@
 {
   "name": "@futurebrand/helpers",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "FutureBrand Helpers",
   "main": "index.js",
   "scripts": {
