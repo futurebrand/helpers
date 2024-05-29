@@ -43,18 +43,23 @@ class Fetcher extends FetcherClient {
     feachConfigs: IFetchConfig = {},
     method = 'GET'
   ): Promise<IFetchResponse<T>> {
+    "use server"
+
     const requestConfig: RequestInit = {
       method,
       headers: {
         Accept: 'application/json',
       },
-      next: {
-        revalidate: 30,
-      },
     }
     let requestUrl = baseUrl
 
-    const { body, headers, params } = feachConfigs
+    const { body, headers, params, revalidate } = feachConfigs
+
+    if (revalidate || this.revalidate) {
+      (requestConfig as any).next = {
+        revalidate: revalidate ?? this.revalidate
+      }
+    }
 
     if (params) {
       const searchParameter = this.synthesizeParameters(params)
@@ -103,10 +108,12 @@ class Fetcher extends FetcherClient {
   }
 
   public async post<T = any>(path: string, config?: IFetchConfig) {
+    "use server"
     return this.fetch<T>(this.getApiUrl(path), this.mescleConfig(config), 'POST')
   }
 
   public async get<T = any>(path: string, config?: IFetchConfig) {
+    "use server"
     return this.fetch<T>(this.getApiUrl(path), this.mescleConfig(config), 'GET')
   }
 }

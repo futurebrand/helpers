@@ -1,44 +1,47 @@
 import { notFound, redirect } from 'next/navigation'
-import { PathModule } from '@futurebrand/modules'
 
 import { IFetchResponse, type FetcherClient, FetcherError } from '@futurebrand/modules/fetcher'
-import type { ContentTypes, IContent, IContentResponse, IContentSlugMap } from '@futurebrand/types/contents'
-import cmsApi from '@futurebrand/strapi/api'
+import type { IContent, IContentMap, IContentResponse } from '@futurebrand/types/contents'
+import { IContentServiceConfigs, IQueryCallerParams, IServiceCallerProps, ISingleCallerProps } from './types'
+
+import { cmsApi, cmsContentPath, ICMSContentApiPath } from '@futurebrand/services/cms'
 
 class ContentService {
   private readonly fetcher: FetcherClient
+  private readonly contentPath: ICMSContentApiPath
+  private revalidate?: number
 
-  constructor(public locale?: string, fetcher?: FetcherClient) {
-    this.fetcher = fetcher || cmsApi
-    if (!this.locale) {
-      this.locale = PathModule.instance.defaultLocale
-    }
+  constructor(configs: IContentServiceConfigs = {}) {
+    this.fetcher = configs.fetcher || cmsApi
+    this.contentPath = configs.contentPath || cmsContentPath
+    this.revalidate = configs.revalidate
   }
 
-  public async getBySlug<T extends IContent>(
-    type: ContentTypes,
-    slug: string
-  ): Promise<T> {
+  public setRevalidate(revalidate: number) {
+    this.revalidate = revalidate
+  }
+
+  public async createRequest<T = any>(path: string, props: IServiceCallerProps<any> | any) {
+    return await this.fetcher.get<T>(
+      path,
+      {
+        params: props,
+        revalidate: this.revalidate
+      }
+    )
+  }
+
+  public async single<T extends IContent>(props: ISingleCallerProps<T>): Promise<T> {
     'use server'
 
-    if (!slug) {
-      throw new Error('Slug is required')
+    if (props.previewData) {
+      return props.previewData
     }
 
     let response: IFetchResponse<T>
- 
 
     try {
-      response = await this.fetcher.get(
-        '/futurebrand-strapi-helpers/contents/find-by-slug',
-        {
-          params: {
-            locale: this.locale,
-            type,
-            slug,
-          },
-        }
-      )
+      response = await this.createRequest<T>(this.contentPath.single, props)
     } catch (error) {
       const status = (error as FetcherError).response?.status
       if (status === 404) {
@@ -46,14 +49,10 @@ class ContentService {
       }
 
       console.error((error as FetcherError).body)
-      throw new Error(`Error on fetch ${slug}`)
+      throw new Error(`Error on get single ${JSON.stringify(props.params)}`)
     }
 
-    const pageData = response?.data
-
-    if (!pageData) {
-      throw new Error('Page attributes not Found')
-    }
+    const pageData = response.data
 
     const contentRedirect = pageData.pageSeo?.redirect
     if (contentRedirect?.enabled) {
@@ -63,39 +62,49 @@ class ContentService {
     return pageData
   }
 
-  public async query<T extends IContent[]>(
-    type: ContentTypes,
-    filters: Record<string, any>,
-    page: number = 1,
-  ): Promise<IContentResponse<T>> {
-    const response = await this.fetcher.get<IContentResponse<T>>(
-      `/futurebrand-strapi-helpers/contents`,
-      {
-        params: {
-          locale: this.locale,
-          type,
-          filters,
-          page,
-        },
-      }
-    )
+  public async seo<T = IContent>(props: IServiceCallerProps<T>): Promise<T> {
+    'use server'
 
+    let response: IFetchResponse<T>
+
+    try {
+      response = await this.createRequest<T>(this.contentPath.seo, props)
+    } catch (error) {
+      console.error((error as FetcherError).body)
+      throw new Error(`Error on get seo ${JSON.stringify(props.params)}`)
+    }
+  
     return response.data
   }
 
-  public async getPathsMap(type: ContentTypes) {
+  public async preview<T = IContent>(token: string): Promise<T> {
     'use server'
-    
-    const response = await this.fetcher.get<IContentSlugMap[]>(
-      `/futurebrand-strapi-helpers/contents/slugs`,
-      {
-        params: {
-          type,
-          locale: this.locale,
-        },
-      }
-    )
 
+    let response: IFetchResponse<T>
+
+    try {
+      response = await this.createRequest<T>(this.contentPath.preview, {
+        token
+      })
+    } catch (error) {
+      console.error((error as FetcherError).body)
+      throw new Error('Error on get preview')
+    }
+  
+    return response.data
+  }
+
+  public async query<T = IContent[]>(props: IServiceCallerProps<IQueryCallerParams>): Promise<IContentResponse<T>> {
+    'use server'
+
+    const response = await this.createRequest<IContentResponse<T>>(this.contentPath.query, props)
+    return response.data
+  }
+
+  public async map(props: IServiceCallerProps<undefined>) {
+    'use server'
+
+    const response = await this.createRequest<IContentMap[]>(this.contentPath.map, props)
     return response.data
   }
 }

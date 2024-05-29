@@ -1,1 +1,2 @@
-export { default } from './content'
+export { default as ContentService } from './content'
+export * from './types'

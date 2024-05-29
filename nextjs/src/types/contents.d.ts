@@ -11,8 +11,8 @@ declare module '@futurebrand/types/contents' {
   export type ContentTypes = 'pages'
   export interface IContentSlugs {}
 
-  export interface IContentSlugMap {
-    slug: string
+  export interface IContentMap {
+    params: Record<string, string>
     date: string
   }
 
@@ -31,12 +31,15 @@ declare module '@futurebrand/types/contents' {
   // LOCALIZATION
 
   export interface ILocalization {
-    slug: string
-    path?: string
+    id: number
     locale: string
+    params: any
   }
 
-  export type ILocalizationData = IStrapiDataComponentList<ILocalization>
+  export interface ILocalizationRoute {
+    path: string,
+    locale: string
+  }
 
   // SEO
 
@@ -75,14 +78,14 @@ declare module '@futurebrand/types/contents' {
 
   
   export type IContentResponse<T> = {
-    results: T[]
+    results: T
     pagination: IContentPagination
   }
 
   // PAGE
 
   export interface IPageData extends IContent {
-    blocks: Array<IPageBlockData<unknown>>
+    blocks: Array<IBlockData<unknown>>
     path: string
   }
 }

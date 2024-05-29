@@ -1,21 +1,25 @@
-import { IPluginConfig } from "../../config/types"
+import { IHelpersPluginConfig } from "~/types"
 
-export function privateImagesAttributes(strapi: any, config: IPluginConfig) {
+const PRIVATE_ATTRIBUTES = [
+  'createdAt',
+  'updatedAt',
+  'ext',
+  'hash',
+  'formats',
+  'provider_metadata',
+  'provider',
+  'previewUrl',
+  'size',
+]
+
+export function privateImagesAttributes(strapi: any, config: IHelpersPluginConfig) {
   const plugin = strapi.plugin('upload')
 
   if (config.privateImageAttributes) {
-    plugin.contentTypes.file.options = {
-      privateAttributes: [
-        'createdAt',
-        'updatedAt',
-        'ext',
-        'hash',
-        'formats',
-        'provider_metadata',
-        'provider',
-        'previewUrl',
-        'size',
-      ],
+    const attributes = plugin.contentTypes.file.attributes
+
+    for (const attr of PRIVATE_ATTRIBUTES) {
+      attributes[attr].private = true
     }
   }
 }

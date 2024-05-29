@@ -4,7 +4,7 @@ import React from 'react'
 
 const { useEffect, useState, useRef } = React
 
-function useIntersectObserver() {
+export function useIntersectObserver() {
   const [isVisible, setVisible] = useState(false)
   const reference = useRef(null)
 
@@ -30,5 +30,3 @@ function useIntersectObserver() {
 
   return [isVisible, reference] as [boolean, any]
 }
-
-export default useIntersectObserver

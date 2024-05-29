@@ -1,19 +1,17 @@
 'use client'
 
 import React, { createContext, useCallback, useMemo } from 'react'
+import { ILocalizationRoute } from '@futurebrand/types/contents'
+import { I18nConfig } from '@futurebrand/services'
 
-import { ContentTypes, IContentSlugs, ILocalization } from '@futurebrand/types/contents'
-import { IDictonary } from '@futurebrand/types/global-options'
-
-interface ILocalizationsContext {
+export interface ILocalizationsContext {
+  defaultLocale: string
   locale: string
-  dictionary: IDictonary
-  routes: ILocalization[]
+  locales: string[]
+  routes: ILocalizationRoute[]
   updateRoutes: (
-    localizations?: ILocalization[]
+    localizations?: ILocalizationRoute[]
   ) => void
-  getContentSlug: (type: ContentTypes, slug: string) => string
-  getContentTypeSlug: (type: ContentTypes, locale: string) => string | false
 }
 
 const initialState: Partial<ILocalizationsContext> = {
@@ -25,23 +23,18 @@ export const LocalizationsContext = createContext<ILocalizationsContext>(
   initialState as ILocalizationsContext
 )
 
-interface Properties {
-  children: React.ReactNode
+export interface ILocalizationsContextProps extends I18nConfig {
   locale: string
-  locales: string[]
-  slugs: IContentSlugs
-  dictionary: IDictonary,
 }
 
 const LocalizationsContextProvider = ({
   children,
-  dictionary,
   locale,
   locales,
-  slugs
-}: Properties) => {
+  defaultLocale
+}: React.PropsWithChildren<ILocalizationsContextProps>) => {
   const [currentRoutes, setCurrentRoutes] = React.useState<
-  ILocalization[]
+  ILocalizationRoute[]
   >([])
 
   const canNavigateRoutes = useMemo(() => {
@@ -51,12 +44,12 @@ const LocalizationsContextProvider = ({
   const AvaibleRoutes = useMemo(() => {
     return locales.map((locale) => ({
       locale,
-      slug: '/',
+      path: locale === defaultLocale ? '/' : `/${locale}`,
     }))
-  }, [locales])
+  }, [locales, defaultLocale])
 
   const updateRoutes = useCallback(
-    (localizations?: ILocalization[]) => {
+    (localizations?: ILocalizationRoute[]) => {
       if (!localizations || localizations.length === 0) {
         setCurrentRoutes(AvaibleRoutes)
       } else {
@@ -65,10 +58,10 @@ const LocalizationsContextProvider = ({
             (currentRoute) => currentRoute.locale === route.locale
           )
           if (currentRoute) {
-            if (currentRoute.slug === `/${currentRoute.locale}`) {
+            if (currentRoute.path === `/${currentRoute.locale}`) {
               return {
                 ...currentRoute,
-                slug: '/',
+                path: '/',
               }
             }
             return currentRoute
@@ -81,46 +74,20 @@ const LocalizationsContextProvider = ({
     [AvaibleRoutes]
   )
 
-  const getContentTypeSlug = useCallback((
-    type: ContentTypes = 'pages',
-    locale: string
-  ): string | false => {
-    return slugs[locale]?.[type as keyof IContentSlugs] || false
-  }, [slugs])
-
-  const getContentSlug = useCallback(
-    (type: ContentTypes, slug: string) => {
-      const slugString = slug.startsWith('/') ? slug : `/${slug}`
-
-      if (type === 'pages') {
-        return slugString
-      }
-
-      const typeSlug = getContentTypeSlug(type, locale)
-
-      return `/${typeSlug}${slugString}`
-    },
-    [locale]
-  )
 
   return (
     <LocalizationsContext.Provider
       value={{
+        defaultLocale,
         locale,
+        locales,
         routes: canNavigateRoutes,
         updateRoutes,
-        getContentSlug,
-        getContentTypeSlug,
-        dictionary,
       }}
     >
       {children}
     </LocalizationsContext.Provider>
   )
-}
-
-export function useLocalizations() {
-  return React.useContext(LocalizationsContext)
 }
 
 export default LocalizationsContextProvider

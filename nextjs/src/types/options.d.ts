@@ -1,9 +1,6 @@
 declare module '@futurebrand/types/global-options' {
   import {
-    type HTMLString,
-    type ISocialLinks,
-    type IStrapiCommonLink,
-    type IStrapiImage,
+    type IStrapiMedia,
   } from '@futurebrand/types/strapi'
 
   export interface IGlobalStructure {}
@@ -11,7 +8,7 @@ declare module '@futurebrand/types/global-options' {
   export interface IGlobalSEO {
     metaTitle: string
     metaDescription: string
-    metaImage: IStrapiImage
+    metaImage: IStrapiMedia
     siteName: string
     themeColor: string
     customMetas: Array<{ name: string; content: string }>
@@ -19,5 +16,12 @@ declare module '@futurebrand/types/global-options' {
 
   export interface IDictonary {}
 
-  export interface IGlobalOptions {}
+  export interface IGlobalOptions {
+    dictionary: IDictonary
+  }
+
+  export interface IGlobalData {
+    options: IGlobalOptions
+    structure: IGlobalStructure
+  }
 }

@@ -1,5 +1,5 @@
 export {
-  default,
+  default as LocalizationsProvider,
   LocalizationsContext,
-  useLocalizations,
+  ILocalizationsContext
 } from './localizations'

@@ -16,6 +16,10 @@ declare module '@futurebrand/types/strapi' {
     data: Array<IStrapiComponent<T>>
   }
 
+  export interface IStrapiNullnableMDataComponent<T> {
+    data: IStrapiComponent<T> | null
+  }
+
   export type ApiResponse<T> = IFetchResponse<IStrapiDataComponent<T>>
   export type ApiListResponse<T> = IFetchResponse<IStrapiDataComponent<T>[]>
 
@@ -30,7 +34,7 @@ declare module '@futurebrand/types/strapi' {
     caption: string
   }
 
-  export type IStrapiMedia = IStrapiDataComponent<IStrapiMediaAttributes>
+  export type IStrapiMedia = IStrapiMediaAttributes
   export type IStrapiMediaList =
     IStrapiDataComponentList<IStrapiMediaAttributes>
   export type IStrapiNullnableMedia =
