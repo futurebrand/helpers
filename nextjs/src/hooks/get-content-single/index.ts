@@ -1,3 +1,5 @@
+"use server";
+
 import { ContentService, ISingleCallerProps } from "@futurebrand/services";
 import { IContent } from "@futurebrand/types/contents";
 

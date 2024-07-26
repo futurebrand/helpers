@@ -9,9 +9,12 @@ type GlobalDataCache = Record<string, IGlobalData>;
 const [getGlobalDataCache, setGlobalDataCache] =
   createCacheContext<GlobalDataCache>({});
 
-export async function getGlobalData(locale: string): Promise<IGlobalData> {
+export async function getGlobalData(
+  locale: string,
+  rewrite?: boolean
+): Promise<IGlobalData> {
   const cache = getGlobalDataCache();
-  if (cache[locale]) {
+  if (cache[locale] && !rewrite) {
     return cache[locale];
   }
 

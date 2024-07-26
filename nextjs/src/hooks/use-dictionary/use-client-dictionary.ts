@@ -1,10 +1,12 @@
-"use client"
+"use client";
 
-import { useContext } from 'react';
-import { DictonaryContext } from '@futurebrand/contexts';
+import { useContext } from "react";
+import { DictonaryContext } from "@futurebrand/contexts";
 
-export function useClientDictionary () {
-  const { dictionary } = useContext(DictonaryContext)
-  return dictionary
+/**
+ * @deprecated use getDictionary instead
+ */
+export function useClientDictionary() {
+  const { dictionary } = useContext(DictonaryContext);
+  return dictionary;
 }
-
