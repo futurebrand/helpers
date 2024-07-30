@@ -1,87 +1,90 @@
-import FetcherError from './fetcher.error'
-import FetcherClient from './fetcher.interface'
-import { IFetchConfig, IFetchResponse } from './types'
+import FetcherError from "./fetcher.error";
+import FetcherClient from "./fetcher.interface";
+import { IFetchConfig, IFetchResponse } from "./types";
 
 class Fetcher extends FetcherClient {
-
   private synthesizeParameters(params: Record<string, any> = {}) {
-    const searchParameter = new URLSearchParams()
-    
+    const searchParameter = new URLSearchParams();
+
     const subParameters = (accumulatorKeys: string[], entry: any) => {
       for (const [subKey, subEntry] of Object.entries(entry)) {
-        const keys = [...accumulatorKeys, subKey]
-        if (subEntry !== null && typeof subEntry === 'object') {
-          subParameters(keys, subEntry)
+        const keys = [...accumulatorKeys, subKey];
+        if (subEntry !== null && typeof subEntry === "object") {
+          subParameters(keys, subEntry);
         } else {
-          const firstKey = keys.shift()
+          const firstKey = keys.shift();
           const key = keys.reduce(
             (accumulator, key) => `${accumulator}[${key}]`,
             firstKey
-          ) as string
+          ) as string;
           if (subEntry != null) {
-            searchParameter.append(key, subEntry as any)
+            searchParameter.append(key, subEntry as any);
           }
         }
       }
-    }
-  
+    };
+
     for (const [key, entry] of Object.entries(params)) {
-      if (entry !== null && typeof entry === 'object') {
-        subParameters([key], entry)
+      if (entry !== null && typeof entry === "object") {
+        subParameters([key], entry);
       } else {
         if (entry != null) {
-          searchParameter.append(key, entry)
+          searchParameter.append(key, entry);
         }
       }
     }
-  
-    return searchParameter
+
+    return searchParameter;
   }
 
-  private async fetch<T> (
+  private async fetch<T>(
     baseUrl: string,
     feachConfigs: IFetchConfig = {},
-    method = 'GET'
+    method = "GET"
   ): Promise<IFetchResponse<T>> {
+    "use server";
+
     const requestConfig: RequestInit = {
       method,
       headers: {
-        Accept: 'application/json',
+        Accept: "application/json",
       },
-      next: {
-        revalidate: 30,
-      },
-    }
-    let requestUrl = baseUrl
+    };
+    let requestUrl = baseUrl;
 
-    const { body, headers, params } = feachConfigs
+    const { body, headers, params, revalidate } = feachConfigs;
+
+    if (revalidate || this.revalidate) {
+      (requestConfig as any).next = {
+        revalidate: revalidate ?? this.revalidate,
+      };
+    }
 
     if (params) {
-      const searchParameter = this.synthesizeParameters(params)
-      requestUrl = `${requestUrl}?${searchParameter.toString()}`
+      const searchParameter = this.synthesizeParameters(params);
+      requestUrl = `${requestUrl}?${searchParameter.toString()}`;
     }
 
     if (headers) {
-      requestConfig.headers = { ...requestConfig.headers, ...headers }
+      requestConfig.headers = { ...requestConfig.headers, ...headers };
     }
 
     if (body) {
-      if (typeof body === 'object') {
-        requestConfig.body = JSON.stringify(body) as string
-        (requestConfig.headers as any)['Content-Type'] = 'application/json'
+      if (typeof body === "object") {
+        requestConfig.body = JSON.stringify(body) as string;
+        (requestConfig.headers as any)["Content-Type"] = "application/json";
       } else {
-        requestConfig.body = body
+        requestConfig.body = body;
       }
     }
-    const requestProps = { url: requestUrl, ...requestConfig }
-
+    const requestProps = { url: requestUrl, ...requestConfig };
 
     try {
-      const response = await fetch(requestUrl, requestConfig)
-      const data = await response.json()
+      const response = await fetch(requestUrl, requestConfig);
+      const data = await response.json();
 
       if (response.status !== 200) {
-        throw new FetcherError(requestProps, response, data)
+        throw new FetcherError(requestProps, response, data);
       }
 
       return {
@@ -89,26 +92,53 @@ class Fetcher extends FetcherClient {
         headers: response.headers,
         request: requestProps,
         response,
-      }
-
+      };
     } catch (error) {
       if (!(error instanceof FetcherError)) {
-        console.error('* Unexpected Fetch Error', {
-          request: requestProps
-        })
+        console.error("* Fetcher: Unexpected Error *");
+        console.error("- Request", requestProps);
+        console.error("- Error", error);
       }
-      
-      throw error
+
+      throw error;
     }
   }
 
   public async post<T = any>(path: string, config?: IFetchConfig) {
-    return this.fetch<T>(this.getApiUrl(path), this.mescleConfig(config), 'POST')
+    "use server";
+    return this.fetch<T>(
+      this.getApiUrl(path),
+      this.mescleConfig(config),
+      "POST"
+    );
   }
 
   public async get<T = any>(path: string, config?: IFetchConfig) {
-    return this.fetch<T>(this.getApiUrl(path), this.mescleConfig(config), 'GET')
+    "use server";
+    return this.fetch<T>(
+      this.getApiUrl(path),
+      this.mescleConfig(config),
+      "GET"
+    );
+  }
+
+  public async put<T = any>(path: string, config?: IFetchConfig) {
+    "use server";
+    return this.fetch<T>(
+      this.getApiUrl(path),
+      this.mescleConfig(config),
+      "PUT"
+    );
+  }
+
+  public async delete<T = any>(path: string, config?: IFetchConfig) {
+    "use server";
+    return this.fetch<T>(
+      this.getApiUrl(path),
+      this.mescleConfig(config),
+      "DELETE"
+    );
   }
 }
 
-export default Fetcher
+export default Fetcher;

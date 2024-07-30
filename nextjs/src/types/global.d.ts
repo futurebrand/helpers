@@ -1,6 +1,8 @@
-import type { PathModule } from '../modules/path'
+import PathModule from '../modules/path'
+import { IPathCache } from '../modules/path/types'
 
-export declare global {
+declare global {
   // eslint-disable-next-line no-var
   var __pathModule: PathModule
+  var __pathCache: IPathCache
 }

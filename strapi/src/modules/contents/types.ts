@@ -1,5 +1,10 @@
-export type ContentsType = 'modals' | 'pages' | 'posts' | 'tags'
+export type IPagination = {
+  page: number;
+  pageSize: number;
+  pageCount: number;
+  total: number;
+}
+export type IPublicationState = 'live' | 'preview'
+export type ISort = Record<string, 'desc' | 'asc'>
 
-export type IFilter = Record<string, string | number | boolean>
-
-export type FilterEvent = (filters: IFilter) => Record<string, any>
+export type IContentKey = "default" | string

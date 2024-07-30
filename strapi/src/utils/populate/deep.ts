@@ -1,10 +1,10 @@
 import { type Common } from '@strapi/strapi'
 
 import { getModelPopulate } from './model-populate'
-import MemoryCache from '../../utils/memory-cache'
 import { type IPopulateData } from './types'
+import { LibraryList } from '../library'
 
-const deepPopulateCache = new MemoryCache<IPopulateData>()
+const populateCache = new LibraryList<string, IPopulateData>()
 
 function getPopulateInModel(
   modelUid: Common.UID.Schema,
@@ -25,13 +25,19 @@ export function populateCollection(
   layers = 10,
   showPrivateFields = false
 ) {
+  const cacheKey = `${modelUid}-${layers}-${showPrivateFields}`
   // Check if the populate is already in the cache
-  let populate = deepPopulateCache.get(modelUid)
-  if (!populate) {
+  let populate = populateCache.get(cacheKey)
+  if (populate == null) {
     // Get the populate object
     populate = getPopulateInModel(modelUid, layers, showPrivateFields)
-    // Save the populate object in the cache
-    deepPopulateCache.set(modelUid, populate)
+    if (typeof populate === 'boolean') {
+      populate = {}
+    }
+    // Save the populate object in the cache if it's not in development
+    if (process.env.NODE_ENV !== 'development') {
+      populateCache.push(cacheKey, populate)
+    }
   }
   // Return the populate object
   return populate

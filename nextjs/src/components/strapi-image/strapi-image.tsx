@@ -14,9 +14,10 @@ const StrapiImage: React.FC<Properties> = ({
   responsive = true,
   sizes,
   priority,
+  fill,
   ...rest
 }) => {
-  const attributes = ((image as IStrapiMedia)?.data?.attributes || image) as IStrapiMediaAttributes
+  const attributes = 'url' in image ? image : (image as any).data?.attributes as IStrapiMediaAttributes
 
   if (!attributes) {
     return
@@ -33,21 +34,28 @@ const StrapiImage: React.FC<Properties> = ({
         width={width}
         height={height}
         alt={alternativeText || 'Image without alt'}
+        loading={rest.loading ?? priority ? 'eager' : 'lazy'}
         {...(rest as any)}
       />
     )
   }
 
+  const imageSize = fill ? {
+    fill: true
+  } : {
+    width,
+    height
+  }
+
   return (
     <Image
       src={getCMSMediaUrl(url)}
-      width={width}
-      height={height}
       alt={alternativeText || 'Image without alt'}
       placeholder={placeholder && !priority ? placeholder : 'empty'}
       sizes={sizes ?? (responsive ? '100vw' : undefined)}
       priority={priority}
       quality={85}
+      {...imageSize}
       {...rest}
     />
   )
