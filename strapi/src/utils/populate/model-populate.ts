@@ -1,94 +1,131 @@
-import { type Common } from '@strapi/strapi'
-import { type IModalPopulateResponse } from './types'
-
-function getModelAttributes(modelUid: Common.UID.Schema) {
-  const model = strapi.getModel(modelUid)
-
-  if (model.uid === 'plugin::upload.file') {
-    const { related, ...attributes } = model.attributes
-    return attributes
-  }
-
-  return {
-    options: model.options ?? {},
-    attributes: model.attributes,
-    localized: model.pluginOptions?.i18n?.localized ?? false,
-  }
-}
-
-function isEmptyObject(obj: any) {
-  return (
-    typeof obj !== 'object' ||
-    Object.keys(obj as Record<string, any>).length === 0
-  )
-}
-
-function handlePopulateResponse(response: IModalPopulateResponse) {
-  if (response.populate === true || isEmptyObject(response.populate)) {
-    return true
-  }
-
-  if (response.populate === undefined) {
-    return undefined
-  }
-
-  return response
-}
+import { Attribute, type Common } from "@strapi/strapi";
+import { IPopulateObject, type IModalPopulateResponse } from "./types";
+import {
+  getModelAttributes,
+  handlePopulateResponse,
+  isEmptyObject,
+} from "./utils";
 
 export function getModelPopulate(
   modelUid: Common.UID.Schema,
-  layer: number,
-  showPrivateFields: boolean = false
+  numberOfLayers: number = 10,
+  showPrivateFields: boolean = false,
+  layer: number = 0,
+  parents: string[] = []
 ): IModalPopulateResponse {
-  if (layer <= 0) {
+  if (layer + 1 >= numberOfLayers) {
     return {
       populate: true,
-    }
+    };
   }
 
-  if (modelUid === 'admin::user') {
+  if (modelUid === "admin::user") {
     return {
       populate: undefined,
-    }
+    };
   }
 
-  const populate: any = {}
+  if (parents.includes(modelUid)) {
+    return {
+      populate: false,
+    };
+  }
 
-  const { attributes, localized } = getModelAttributes(modelUid)
+  const populate: any = {};
+  const parentsUid = [...parents, modelUid];
 
-  for (const [key, value] of Object.entries(attributes)) {
+  const { attributes, localized } = getModelAttributes(modelUid);
+  const attributeEntries = Object.entries(attributes) as [
+    string,
+    Attribute.Any
+  ][];
+
+  for (const [key, value] of attributeEntries) {
     if (!value || ((value as any).private && !showPrivateFields)) {
-      continue
+      continue;
     }
 
-    if (value.type === 'component') {
+    const populateSettings = (value.pluginOptions as any)?.populate as
+      | Boolean
+      | undefined
+      | IPopulateObject;
+
+    if (typeof populateSettings === "object") {
+      populate[key] = populateSettings;
+      continue;
+    }
+
+    if (populateSettings === false) {
+      populate[key] = false;
+      continue;
+    }
+
+    /** @COMPONENT */
+    if (value.type === "component") {
       const componentPopulate = getModelPopulate(
-        value.component as Common.UID.Schema,
-        layer - 1,
-        showPrivateFields
-      )
-      populate[key] = handlePopulateResponse(componentPopulate)
-    } else if (value.type === 'dynamiczone') {
-      const dynamicPopulate = value.components.reduce((prev, cur) => {
-        const curPopulate = getModelPopulate(cur, layer - 1, showPrivateFields)
-        return { ...prev, [cur]: handlePopulateResponse(curPopulate) }
-      }, {})
-      populate[key] = { on: dynamicPopulate }
-    } else if (value.type === 'relation') {
+        value.component,
+        numberOfLayers,
+        showPrivateFields,
+        layer + 1,
+        parentsUid
+      );
+      populate[key] = handlePopulateResponse(componentPopulate);
+      continue;
+    }
+
+    /** @DYNAMIC_ZONE */
+    if (value.type === "dynamiczone") {
+      if (
+        !value.components ||
+        (layer > 0 && key !== "fields" && !populateSettings)
+      ) {
+        populate[key] = false;
+        continue;
+      }
+
+      const dynamicPopulate = value.components.reduce(
+        (prev: IPopulateObject, currentComponent) => {
+          const currentPopulate = getModelPopulate(
+            currentComponent,
+            numberOfLayers,
+            showPrivateFields,
+            layer + 1
+          );
+          return {
+            ...prev,
+            [currentComponent]: handlePopulateResponse(currentPopulate),
+          } as IPopulateObject;
+        },
+        {} as IPopulateObject
+      );
+      populate[key] = { on: dynamicPopulate };
+      continue;
+    }
+
+    /** @RELATION */
+    if (value.type === "relation") {
+      const relationLayer =
+        key === "localizations" && layer > 0 ? numberOfLayers : layer + 1;
+
       const relationPopulate = getModelPopulate(
-        (value as any).target as Common.UID.Schema,
-        key === 'localizations' && layer > 2 ? 1 : layer - 1,
-        showPrivateFields
-      )
-      populate[key] = handlePopulateResponse(relationPopulate)
-    } else if (value.type === 'media') {
-      populate[key] = true
+        (value as Attribute.Relation<any, any>).target,
+        numberOfLayers,
+        showPrivateFields,
+        relationLayer,
+        parentsUid
+      );
+      populate[key] = handlePopulateResponse(relationPopulate);
+    }
+
+    /** @MEDIA */
+    if (value.type === "media") {
+      populate[key] = true;
     }
   }
 
   if (localized) {
-    populate.localizations = true
+    populate.localizations = true;
   }
 
-  return isEmptyObject(populate) ? { populate: true } : { populate }
+  return isEmptyObject(populate) ? { populate: true } : { populate };
 }

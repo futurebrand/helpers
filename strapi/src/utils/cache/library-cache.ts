@@ -1,78 +1,77 @@
-import { getPluginConfigs } from "~/configs/plugin/plugin"
-import { LibraryList } from "../library"
-import MemoryCache from "./memory-cache"
+import { getPluginConfigs } from "~/configs/plugin/plugin";
+import { LibraryList } from "../library";
+import MemoryCache from "./memory-cache";
 
 interface ICacheData<T> {
-  cache: MemoryCache<T>
-  expires: number
+  cache: MemoryCache<T>;
+  expires: number;
 }
 
-const __cacheLibrary = new LibraryList<string, ICacheData<any>>()
+const __cacheLibrary = new LibraryList<string, ICacheData<any>>();
 
 class LibraryCache<T = any> {
-  public maxDuration: number
-  public revalidate: number | false
+  public maxDuration: number;
+  public revalidate: number | false;
 
-  constructor (public key: string, revalidate?: number | false) {
-    const configs = getPluginConfigs()
-    this.revalidate = revalidate || (configs.cacheRevalidate ?? 60)
-    this.maxDuration = configs.cacheMaxDuration
+  constructor(public key: string, revalidate?: number | false) {
+    const configs = getPluginConfigs();
+    this.revalidate = revalidate || (configs.cacheRevalidate ?? 60);
+    this.maxDuration = configs.cacheMaxDuration;
   }
 
-  public async fromObject (data: Record<string, any>, revalidate?: number | false) {
+  public fromObject(data: Record<string, any>, revalidate?: number | false) {
     const key = Object.keys(data).reduce((acc, field) => {
-      return `${acc}_${field}=${JSON.stringify(data[field])}`
-    }, this.key)
-    return this.getCache(key, revalidate)
+      return `${acc}_${field}=${JSON.stringify(data[field])}`;
+    }, this.key);
+    return this.getCache(key, revalidate);
   }
 
-  public async fromKey (key: string, revalidate?: number | false)  {
-    const cacheKey = `${this.key}_${key}`
-    return this.getCache(cacheKey, revalidate)
+  public fromKey(key: string, revalidate?: number | false) {
+    const cacheKey = `${this.key}_${key}`;
+    return this.getCache(cacheKey, revalidate);
   }
 
-  private async getCache (key: string, revalidate?: number | false) : Promise<MemoryCache<T>> {
-    await this.invalidateExpiredCaches()
-    
-    let record = __cacheLibrary.get(key)
+  private getCache(key: string, revalidate?: number | false): MemoryCache<T> {
+    this.invalidateExpiredCaches();
+
+    let record = __cacheLibrary.get(key);
     if (record) {
-      return record.cache
+      return record.cache;
     }
 
-    const cache = new MemoryCache(revalidate ?? this.revalidate)
+    const cache = new MemoryCache(revalidate ?? this.revalidate);
     record = {
       cache,
-      expires: Date.now() + this.maxDuration
-    }
+      expires: Date.now() + this.maxDuration,
+    };
 
-    __cacheLibrary.push(key, record)
-    return cache
+    __cacheLibrary.push(key, record);
+    return cache;
   }
 
-
-  public async invalidate () {
-    await __cacheLibrary.map(async (cacheKey) => {
+  public invalidate() {
+    __cacheLibrary.map(async (cacheKey) => {
       if (cacheKey.startsWith(this.key)) {
-        __cacheLibrary.remove(cacheKey)
+        __cacheLibrary.remove(cacheKey);
       }
-    })
+    });
   }
 
-  public async invalidateKey (key: string) {
-    __cacheLibrary.remove(key)
+  public invalidateKey(key: string) {
+    __cacheLibrary.remove(key);
   }
 
-  public async invalidateExpiredCaches () {
-    await __cacheLibrary.map(async (key, record) => {
+  public invalidateExpiredCaches() {
+    __cacheLibrary.map((key, record) => {
       if (!record) {
-        return
+        return;
       }
 
       if (record.expires < Date.now() || !record.cache.data) {
-        __cacheLibrary.remove(key)
+        __cacheLibrary.remove(key);
       }
-    })
+    });
   }
 }
 
-export default LibraryCache
+export default LibraryCache;
