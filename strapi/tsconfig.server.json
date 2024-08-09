@@ -1,6 +1,7 @@
 {
   "extends": "@strapi/typescript-utils/tsconfigs/server",
   "compilerOptions": {
+    "target": "ESNext",
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": "./src",

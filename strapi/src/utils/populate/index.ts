@@ -1,1 +1,1 @@
-export { populateCollection } from './deep'
+export { populateCollection } from "./populate";
