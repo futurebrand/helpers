@@ -1,7 +1,7 @@
 "use server";
 
-import { getLocale } from "next-intl/server";
 import { getGlobalData } from "@futurebrand/hooks";
+import { getLocale } from "next-intl/server";
 
 export async function getDictionary(locale?: string) {
   const optionsLocale = locale ?? (await getLocale());
