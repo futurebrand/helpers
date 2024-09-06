@@ -1,23 +1,52 @@
 'use client'
 
+import { useIntersectObserver } from '@futurebrand/hooks/use-intersect-observer'
 import type {
   IStrapiMedia,
   IStrapiMediaAttributes,
 } from '@futurebrand/types/strapi'
-import React, { useEffect, useState } from 'react'
-
 import { getCMSMediaUrl } from '@futurebrand/utils'
-import { useIntersectObserver } from '@futurebrand/hooks/use-intersect-observer'
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react'
 
 type Properties = {
   video: IStrapiMedia | IStrapiMediaAttributes
 } & React.VideoHTMLAttributes<HTMLVideoElement>
 
-const CmsVideo: React.FC<Properties> = ({ video, autoPlay, ...rest }) => {
-  const attributes = 'url' in video ? video : (video as any).data?.attributes as IStrapiMediaAttributes
+interface IVideoRef {
+  isLoaded: boolean
+  play: () => void
+  pause: () => void
+  element?: HTMLVideoElement
+}
+
+const CmsVideo: React.ForwardRefRenderFunction<IVideoRef, Properties> = (
+  { video, autoPlay, ...rest },
+  ref
+) => {
+  if (!video) {
+    return null
+  }
+
+  const attributes =
+    'url' in video
+      ? video
+      : ((video as any).data?.attributes as IStrapiMediaAttributes)
 
   const [isVisible, videoReference] = useIntersectObserver()
   const [isLoaded, setIsLoaded] = useState(false)
+
+  const playVideo = useCallback(() => {
+    videoReference.current?.play()
+  }, [videoReference])
+
+  const pauseVideo = useCallback(() => {
+    videoReference.current?.pause()
+  }, [videoReference])
 
   useEffect(() => {
     if (isVisible) {
@@ -32,6 +61,13 @@ const CmsVideo: React.FC<Properties> = ({ video, autoPlay, ...rest }) => {
       }
     }
   }, [autoPlay, isLoaded, isVisible, videoReference])
+
+  useImperativeHandle(ref, () => ({
+    isLoaded,
+    element: videoReference.current,
+    play: playVideo,
+    pause: pauseVideo,
+  }))
 
   if (!attributes) {
     return
@@ -50,4 +86,4 @@ const CmsVideo: React.FC<Properties> = ({ video, autoPlay, ...rest }) => {
   )
 }
 
-export default CmsVideo
+export default React.forwardRef(CmsVideo)

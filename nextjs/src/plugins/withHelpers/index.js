@@ -4,16 +4,16 @@ const {
   getHostName,
   getSiteUrl,
   getDeployEnvironnement,
-} = require("./utils");
+} = require('./utils')
 
 /**
  * @param {import('./types').NextWithHelpersConfig} nextConfig
  * @returns {import('next').NextConfig}
  */
 const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
-  const { cms, cdn, domains, csp, redirects, revalidate } = futureBrandHelpers;
-  const siteUrl = getSiteUrl(futureBrandHelpers.siteUrl);
-  const siteHostName = getHostName(siteUrl);
+  const { cms, cdn, domains, csp, redirects, revalidate } = futureBrandHelpers
+  const siteUrl = getSiteUrl(futureBrandHelpers.siteUrl)
+  const siteHostName = getHostName(siteUrl)
 
   return {
     ...nextConfig,
@@ -26,8 +26,8 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
       fetchRevalidate: revalidate ? String(revalidate) : undefined,
       cmsType: cms.type,
       cmsUrl: cms.url,
-      ...(cms.type === "strapi"
-        ? { cmsPublicToken: cms.token, adminEnvKey: cms.adminEnvKey ?? "" }
+      ...(cms.type === 'strapi'
+        ? { cmsPublicToken: cms.token, adminEnvKey: cms.adminEnvKey ?? '' }
         : {}),
       siteUrl,
       ...(nextConfig.env ?? {}),
@@ -36,24 +36,24 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
     images: {
       remotePatterns: [
         {
-          protocol: "https",
+          protocol: 'https',
           hostname: getHostName(cms.url),
         },
         {
-          protocol: "http",
+          protocol: 'http',
           hostname: getHostName(cms.url),
         },
         {
-          protocol: "http",
+          protocol: 'http',
           hostname: siteHostName,
-          port: "3000",
+          port: '3000',
         },
         {
-          protocol: "https",
+          protocol: 'https',
           hostname: siteHostName,
         },
         {
-          protocol: "https",
+          protocol: 'https',
           hostname: cdn || siteHostName,
         },
         ...(domains
@@ -61,7 +61,7 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
               /**
                * @type {any}
                */
-              protocol: "https",
+              protocol: 'https',
               hostname: domain,
             }))
           : []),
@@ -70,19 +70,19 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
       minimumCacheTTL: 31536000,
     },
     cacheHandler:
-      nextConfig.cacheHandler ?? require.resolve("../cache-handler"),
+      nextConfig.cacheHandler ?? require.resolve('../cache-handler'),
     webpack: (config, context) => {
-      const { dev, isServer } = context;
+      const { dev, isServer } = context
 
       if (!isServer && !dev) {
-        config.optimization = getWebpackOtimization(config.optimization);
+        config.optimization = getWebpackOtimization(config.optimization)
       }
 
       if (nextConfig.webpack) {
-        return nextConfig.webpack(config, context);
+        return nextConfig.webpack(config, context)
       }
 
-      return config;
+      return config
     },
     headers: csp
       ? getCSPConfiguration(csp, nextConfig.headers)
@@ -90,7 +90,7 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
     async redirects() {
       const baseRedirects = nextConfig.redirects
         ? await nextConfig.redirects()
-        : [];
+        : []
       return [
         ...(redirects
           ? redirects.map((redirect) => ({
@@ -99,9 +99,9 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
             }))
           : []),
         ...baseRedirects,
-      ];
+      ]
     },
-  };
-};
+  }
+}
 
-module.exports = withHelpers;
+module.exports = withHelpers
