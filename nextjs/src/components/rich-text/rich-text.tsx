@@ -1,22 +1,22 @@
-import type { HTMLString } from '@futurebrand/types/strapi'
-import React from 'react'
+import type { HTMLString } from "@futurebrand/types/strapi";
+import React from "react";
+
+import { parseHtml } from "./parser";
 
 type Properties = {
-  html: HTMLString
-} & React.BaseHTMLAttributes<HTMLDivElement>
+  html: HTMLString;
+} & React.BaseHTMLAttributes<HTMLDivElement>;
 
 const RichText: React.FC<Properties> = ({
-  html = '',
-  className = '',
+  html = "",
+  className = "",
   ...rest
 }) => {
   return (
-    <div
-      dangerouslySetInnerHTML={{ __html: html }}
-      className={`cms-rich-text ${className}`}
-      {...rest}
-    />
-  )
-}
+    <div className={`cms-rich-text ${className}`} {...rest}>
+      {parseHtml(html)}
+    </div>
+  );
+};
 
-export default RichText
+export default RichText;

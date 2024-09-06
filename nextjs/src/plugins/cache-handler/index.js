@@ -1,13 +1,9 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-
 const path = require("path");
 const FileSystemCache = require("next/dist/server/lib/incremental-cache/file-system-cache");
 
 class CacheHandler extends FileSystemCache.default {
-  constructor(ctx) {
-    super(ctx);
-  }
-
   isAmplifyBuild() {
     return (
       process.env.NODE_ENV !== "development" &&

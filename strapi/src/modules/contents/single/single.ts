@@ -380,7 +380,7 @@ class ContentSingle {
     params: Record<string, string>,
     locale?: string
   ) {
-    return await this.cacheLibrary.fromObject({
+    return this.cacheLibrary.fromObject({
       cacheType,
       locale: locale ?? "default",
       ...params,
