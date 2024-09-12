@@ -1,5 +1,5 @@
 import NextLink, { type LinkProps } from 'next/link'
-import React, { PropsWithChildren } from 'react'
+import React, { type PropsWithChildren } from 'react'
 
 export type LinkPropeties = {
   blank?: boolean
@@ -9,8 +9,8 @@ export type LinkPropeties = {
 
 const Link: React.FC<PropsWithChildren<LinkPropeties>> = ({ children, name, className, blank, ...props }) => {
   return (
-    <NextLink 
-      {...(props as LinkPropeties)} 
+    <NextLink
+      {...(props as LinkPropeties)}
       {...(blank ? { target: '_blank' } : {})}
       className={`${name}${className ? ` ${className}` : ''}`}
     >

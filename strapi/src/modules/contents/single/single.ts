@@ -55,7 +55,6 @@ class ContentSingle {
     this.publicationState = configs.state ?? DEFAULT_PUBLICATION_STATE;
     this.blockHandlers = [];
     this.public = configs.public ?? true;
-
     this.populateOverwrite = configs.populate ?? {};
     // EVENTS
     this.beforeGetEvent = async (params) => params;

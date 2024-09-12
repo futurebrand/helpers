@@ -1,14 +1,14 @@
 'use client'
 
+import { type IDictonary } from '@futurebrand/types/global-options'
 import React, { createContext } from 'react'
-import { IDictonary } from '@futurebrand/types/global-options'
 
 export interface IDictonaryContext {
   dictionary: IDictonary
 }
 
 const initialState: Partial<IDictonaryContext> = {
-  dictionary: {}
+  dictionary: {},
 }
 
 export const DictonaryContext = createContext<IDictonaryContext>(
@@ -16,13 +16,12 @@ export const DictonaryContext = createContext<IDictonaryContext>(
 )
 
 export interface IDictionaryContextProps {
-  dictionary: IDictonary,
+  dictionary: IDictonary
 }
 
-const DictonaryContextProvider: React.FC<React.PropsWithChildren<IDictionaryContextProps>> = ({
-  children,
-  dictionary,
-}) => {
+const DictonaryContextProvider: React.FC<
+  React.PropsWithChildren<IDictionaryContextProps>
+> = ({ children, dictionary }) => {
   return (
     <DictonaryContext.Provider
       value={{

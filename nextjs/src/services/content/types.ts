@@ -1,9 +1,13 @@
-import { FetcherClient } from "@futurebrand/modules"
-import { ContentTypes, IContentPagination } from "@futurebrand/types/contents"
-import { ICMSContentApiPath } from "../cms"
+import { type FetcherClient } from '@futurebrand/modules'
+import {
+  type ContentTypes,
+  type IContentPagination,
+} from '@futurebrand/types/contents'
+
+import { type ICMSContentApiPath } from '../cms'
 
 export interface IContentServiceConfigs {
-  fetcher?: FetcherClient, 
+  fetcher?: FetcherClient
   contentPath?: ICMSContentApiPath
   revalidate?: number
 }
@@ -19,10 +23,10 @@ export interface IQueryCallerParams {
 }
 
 export interface IServiceCallerProps<T> {
-  type: ContentTypes,
-  locale: string,
-  key?: string,
-  params?: T,
+  type: ContentTypes
+  locale: string
+  key?: string
+  params?: T
 }
 
 export interface ISingleCallerProps<T> extends IServiceCallerProps<any> {
