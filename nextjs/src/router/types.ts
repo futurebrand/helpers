@@ -1,4 +1,5 @@
-import { ContentTypes } from "@futurebrand/types/contents"
+import type { ContentService } from '@futurebrand/services'
+import type { ContentTypes } from '@futurebrand/types/contents'
 
 export type RouterSlugList = Partial<Record<ContentTypes, string>>
 export type RouterSlugs = Record<string, RouterSlugList>
@@ -17,5 +18,6 @@ export interface ICustomRoute {
 export type IRoute = IDynamicRoute | ICustomRoute
 
 export interface IRouterConfig {
-  slugs:RouterSlugs
+  slugs: RouterSlugs
+  contentService?: ContentService
 }

@@ -14,6 +14,8 @@ import React, {
 } from 'react'
 
 type Properties = {
+  autoLoad?: boolean
+  priority?: boolean
   video: IStrapiMedia | IStrapiMediaAttributes
 } & React.VideoHTMLAttributes<HTMLVideoElement>
 
@@ -25,7 +27,7 @@ interface IVideoRef {
 }
 
 const CmsVideo: React.ForwardRefRenderFunction<IVideoRef, Properties> = (
-  { video, autoPlay, ...rest },
+  { video, autoPlay, autoLoad = true, priority, ...rest },
   ref
 ) => {
   if (!video) {
@@ -37,30 +39,54 @@ const CmsVideo: React.ForwardRefRenderFunction<IVideoRef, Properties> = (
       ? video
       : ((video as any).data?.attributes as IStrapiMediaAttributes)
 
-  const [isVisible, videoReference] = useIntersectObserver()
+  const [isVisible, videoReference] = useIntersectObserver<HTMLVideoElement>()
   const [isLoaded, setIsLoaded] = useState(false)
 
-  const playVideo = useCallback(() => {
-    videoReference.current?.play()
-  }, [videoReference])
+  const playVideo = useCallback(async () => {
+    if (!videoReference.current) {
+      return
+    }
+    try {
+      await videoReference.current?.play()
+    } catch (error) {
+      if (!(error instanceof DOMException)) {
+        console.error('Error playing video:', error.message)
+      }
+    }
+  }, [])
 
   const pauseVideo = useCallback(() => {
     videoReference.current?.pause()
-  }, [videoReference])
+  }, [])
 
   useEffect(() => {
-    if (isVisible) {
-      if (!isLoaded) {
-        videoReference.current?.load()
-        setIsLoaded(true)
+    try {
+      const video = videoReference.current
+      if (!video) return
+
+      const canPlay = isLoaded || video.canPlayType(attributes.mime)
+
+      if (priority || !canPlay || !isVisible) {
+        return
       }
+
       if (autoPlay) {
-        videoReference.current?.play()
+        void video.play()
       } else {
-        videoReference.current?.pause()
+        video.pause()
+      }
+    } catch (error) {
+      if (!(error instanceof DOMException)) {
+        console.error('Error playing video:', error.message)
       }
     }
-  }, [autoPlay, isLoaded, isVisible, videoReference])
+  }, [autoPlay, priority, isLoaded, isVisible, attributes.mime])
+
+  useEffect(() => {
+    return () => {
+      setIsLoaded(false)
+    }
+  }, [])
 
   useImperativeHandle(ref, () => ({
     isLoaded,
@@ -76,10 +102,15 @@ const CmsVideo: React.ForwardRefRenderFunction<IVideoRef, Properties> = (
   return (
     <video
       ref={videoReference}
-      autoPlay={autoPlay}
-      preload="none"
       controlsList="nodownload"
+      playsInline
+      onCanPlay={() => {
+        setIsLoaded(true)
+      }}
       {...rest}
+      {...(priority
+        ? { autoPlay: true, muted: true }
+        : { preload: isVisible ? 'auto' : 'none' })}
     >
       <source src={getCMSMediaUrl(attributes.url)} type={attributes.mime} />
     </video>

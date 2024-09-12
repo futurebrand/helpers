@@ -1,11 +1,11 @@
-import NextLink, { type LinkProps } from "next/link";
-import React, { type PropsWithChildren } from "react";
+import NextLink, { type LinkProps } from 'next/link'
+import React, { type PropsWithChildren } from 'react'
 
 export type LinkPropeties = {
-  blank?: boolean;
-  name: string;
+  blank?: boolean
+  name: string
 } & LinkProps &
-  React.AnchorHTMLAttributes<HTMLAnchorElement>;
+  React.AnchorHTMLAttributes<HTMLAnchorElement>
 
 const Link: React.FC<PropsWithChildren<LinkPropeties>> = ({
   children,
@@ -17,12 +17,12 @@ const Link: React.FC<PropsWithChildren<LinkPropeties>> = ({
   return (
     <NextLink
       {...(props as LinkPropeties)}
-      {...(blank ? { target: "_blank" } : {})}
-      className={`${name}${className ? ` ${className}` : ""}`}
+      {...(blank ? { target: '_blank' } : {})}
+      className={`${name}${className ? ` ${className}` : ''}`}
     >
       {children}
     </NextLink>
-  );
-};
+  )
+}
 
-export default Link;
+export default Link

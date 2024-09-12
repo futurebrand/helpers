@@ -1,29 +1,27 @@
-import { Link } from "@futurebrand/components";
+import { Link } from '@futurebrand/components'
 import parse, {
   type DOMNode,
   domToReact,
   type HTMLReactParserOptions,
-} from "html-react-parser";
-import React from "react";
+} from 'html-react-parser'
+import React from 'react'
 
-const siteUrl = process.env.siteUrl;
+const siteUrl = process.env.siteUrl
 
 const options: HTMLReactParserOptions = {
   replace(domNode) {
-    if (domNode.type === "tag" && domNode.name === "a" && domNode.children) {
-      const href = domNode.attribs?.href;
+    if (domNode.type === 'tag' && domNode.name === 'a' && domNode.children) {
+      const href = domNode.attribs?.href
 
       if (!href) {
-        return <p>{domToReact(domNode.children as DOMNode[], options)}</p>;
+        return <p>{domToReact(domNode.children as DOMNode[], options)}</p>
       }
 
-      delete domNode.attribs.rel;
-      delete domNode.attribs.target;
+      delete domNode.attribs.rel
+      delete domNode.attribs.target
 
       const isSameOrigin =
-        href.startsWith(siteUrl) ||
-        href.startsWith("/") ||
-        href.startsWith("#");
+        href.startsWith(siteUrl) || href.startsWith('/') || href.startsWith('#')
 
       return (
         <Link
@@ -34,15 +32,15 @@ const options: HTMLReactParserOptions = {
         >
           {domToReact(domNode.children as DOMNode[], options)}
         </Link>
-      );
+      )
     }
   },
-};
+}
 
 export function parseHtml(html: string) {
   if (!html) {
-    return null;
+    return null
   }
 
-  return parse(html, options);
+  return parse(html, options)
 }

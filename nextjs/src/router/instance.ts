@@ -1,8 +1,5 @@
-"use server"
-
-import { IRouterConfig } from "./types";
-
 import HelpersRouter from './router'
+import { type IRouterConfig } from './types'
 
 async function getRouter(configs: IRouterConfig) {
   const router = new HelpersRouter(configs)
