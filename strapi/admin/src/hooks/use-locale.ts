@@ -1,12 +1,7 @@
-import { useQueryParams } from '@strapi/helper-plugin';
-import { useMemo } from 'react';
+import { useIntl } from "react-intl";
 
-function useLocale () {
-  const [{ query }] = useQueryParams();
-  const locale: string | null = useMemo(() => 
-    (query as any)?.plugins?.i18n?.locale || null, 
-    [query]
-  )
+function useLocale() {
+  const { locale } = useIntl();
   return locale;
 }
 

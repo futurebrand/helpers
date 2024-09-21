@@ -12,6 +12,7 @@ interface IStaticPath {
 }
 
 type IStaticLimits = Partial<Record<ContentTypes, number>>
+type ISitemapExcept = Partial<Record<ContentTypes, boolean>>
 
 class RouterMap {
   constructor(private readonly router: HelpersRouter) {}
@@ -74,13 +75,19 @@ class RouterMap {
     return paths
   }
 
-  public async generateSitemap(): Promise<MetadataRoute.Sitemap> {
+  public async generateSitemap(
+    excepts: ISitemapExcept = {}
+  ): Promise<MetadataRoute.Sitemap> {
     const singleTypes = this.router.contentType.mapContentTypes()
 
     const urls: MetadataRoute.Sitemap = []
 
     for (const locale of this.router.localization.locales) {
       for (const type of singleTypes) {
+        if (excepts[type]) {
+          continue
+        }
+
         const pathsMap = await this.getContentMap(type, locale)
         for (const pathMap of pathsMap) {
           const url = this.router.getUrl(pathMap.params, locale, type)

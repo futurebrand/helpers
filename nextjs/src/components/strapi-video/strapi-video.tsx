@@ -112,7 +112,9 @@ const CmsVideo: React.ForwardRefRenderFunction<IVideoRef, Properties> = (
         ? { autoPlay: true, muted: true }
         : { preload: isVisible ? 'auto' : 'none' })}
     >
-      <source src={getCMSMediaUrl(attributes.url)} type={attributes.mime} />
+      {(isVisible || priority) && (
+        <source src={getCMSMediaUrl(attributes.url)} type={attributes.mime} />
+      )}
     </video>
   )
 }

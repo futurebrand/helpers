@@ -34,6 +34,7 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
     },
     trailingSlash: true,
     images: {
+      ...(nextConfig.images ?? {}),
       remotePatterns: [
         {
           protocol: 'https',
@@ -65,6 +66,7 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
               hostname: domain,
             }))
           : []),
+        ...(nextConfig.images?.remotePatterns ?? []),
       ],
       deviceSizes: [375, 480, 768, 1024, 1280, 1360, 1440],
       minimumCacheTTL: 31536000,
