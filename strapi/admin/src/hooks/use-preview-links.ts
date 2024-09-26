@@ -15,7 +15,7 @@ interface IReducerState {
   isLoaded: boolean;
 }
 
-const usePreviewLinks = (api?: string, isDraft?: boolean, id?: any) => {
+const usePreviewLinks = (api?: string, isDraft?: boolean, document?: any) => {
   const dispatch = useDispatch();
   const fetchClient = useFetchClient();
   const toggleNotification = useNotification();
@@ -34,7 +34,7 @@ const usePreviewLinks = (api?: string, isDraft?: boolean, id?: any) => {
         "/futurebrand-strapi-helpers/preview",
         {
           params: {
-            id,
+            document,
             api,
             draft: isDraft,
             locale,
@@ -57,7 +57,7 @@ const usePreviewLinks = (api?: string, isDraft?: boolean, id?: any) => {
         type: REDUCER.PREVIEW_ERROR,
       });
     }
-  }, [dispatch, fetchClient, toggleNotification, id, isDraft, api]);
+  }, [dispatch, fetchClient, toggleNotification, document, isDraft, api]);
 
   useEffect(() => {
     if (isLoaded) {
@@ -70,11 +70,11 @@ const usePreviewLinks = (api?: string, isDraft?: boolean, id?: any) => {
   }, [isLoaded]);
 
   useEffect(() => {
-    if (isLoading || isLoaded || !id) {
+    if (isLoading || isLoaded || !document) {
       return;
     }
     loadData();
-  }, [isLoading, isLoaded, loadData, id]);
+  }, [isLoading, isLoaded, loadData, document]);
 
   if (isLoading && !isLoaded) {
     return null;

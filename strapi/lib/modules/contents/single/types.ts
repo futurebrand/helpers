@@ -1,5 +1,8 @@
-import { IPopulateObject } from "@futurebrand/utils/populate/types";
-import { IPublicationState } from "../types";
+import {
+  IDocumentConfigs,
+  IDocumentQuery,
+  PublicationStatus,
+} from "../handler";
 
 export type onPathParamsGetFilter = (value: string) => Promise<any>;
 export type onPathParamsGetMap = (value: string) => Promise<any>;
@@ -12,27 +15,17 @@ export interface SinglePathConfig {
   onGetFilter?: onPathParamsGetFilter;
 }
 
-export interface ISingleParams {
-  populate: any;
-  limit: number;
-  publicationState: string;
-  locale?: string;
-  filters: Record<string, any>;
-}
-
-export interface ISingleConfigs {
+export interface ISingleConfigs extends IDocumentConfigs {
   pathConfigs?: SinglePathConfig[];
-  populate?: IPopulateObject;
   public?: boolean;
   mapFilters?: Record<string, any>;
-  state?: IPublicationState;
   seoCacheRevalidate?: number | false;
 }
 
 export type BeforeGetSingleEvent = (
-  query: ISingleParams,
+  query: IDocumentQuery,
   params: Record<string, string | string[]>
-) => Promise<ISingleParams>;
+) => Promise<IDocumentQuery>;
 export type AfterGetSingleEvent = (
   data: any,
   params: Record<string, string | string[]>

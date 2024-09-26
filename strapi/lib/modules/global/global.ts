@@ -14,14 +14,13 @@ class GlobalClient {
   public entities: LibraryList<string, IGlobalEntity>;
   public seo: IGlobalEntity;
   public locales: MemoryCache;
+  private documentService: Modules.Documents.Service;
 
   constructor(
     configs: IGlobalConfigs,
-    private entityService?: Modules.EntityService.EntityService
+    documentService?: Modules.Documents.Service
   ) {
-    if (!this.entityService) {
-      this.entityService = strapi.entityService;
-    }
+    this.documentService = documentService ?? strapi.documents;
 
     this.entities = new LibraryList<string, IGlobalEntity>();
 
@@ -53,14 +52,11 @@ class GlobalClient {
   }
 
   public async getEntityData(entity: IGlobalEntity, locale?: string) {
-    const cache = await entity.cache.fromKey(locale || "default");
+    const cache = entity.cache.fromKey(locale || "default");
 
     return cache.staleWhileRevalidate(async () => {
-      return await this.entityService.findMany(entity.uid, {
+      return await this.documentService(entity.uid).findFirst({
         populate: entity.populate as any,
-        filters: {
-          ...(locale ? { locale } : {}),
-        },
         ...(locale ? { locale } : {}),
       });
     });

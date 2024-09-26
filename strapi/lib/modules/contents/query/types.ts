@@ -1,5 +1,6 @@
 import type { IQueryResponse } from "@futurebrand/types/contents";
-import { IPublicationState, ISort } from "../types";
+import { IDocumentConfigs, PublicationStatus, Sort } from "../handler";
+import { UID } from "@strapi/strapi";
 
 export interface IQueryCallerParams<T> {
   page: number;
@@ -10,30 +11,30 @@ export interface IQueryProps<T> extends IQueryCallerParams<T> {
   locale?: string;
 }
 
-export interface IQueryParams {
-  page?: number;
-  pageSize?: number;
+export interface IQueryParams<T extends UID.ContentType> {
   filters: any;
   populate: any;
-  publicationState: string;
-  sort: ISort;
+  status: PublicationStatus;
+  sort: Sort<T>;
+  locale?: string;
+  limit?: number;
+  start?: number;
 }
 
-export interface IQueryConfigs {
-  sort?: ISort;
+export interface IQueryConfigs<T extends UID.ContentType>
+  extends IDocumentConfigs {
+  sort?: Sort<T>;
   filters?: Record<string, any>;
-  populate?: any;
   hasPagination?: boolean;
   pageSize?: number;
-  state?: IPublicationState;
 }
 
 export type FilterEvent<T> = (filters: T) => Promise<Record<string, any>>;
 
-export type BeforeQueryEvent<T> = (
-  query: IQueryParams,
+export type BeforeQueryEvent<T, UID extends UID.ContentType> = (
+  query: IQueryParams<UID>,
   props: IQueryProps<T>
-) => Promise<IQueryParams>;
+) => Promise<IQueryParams<UID>>;
 export type AfterQueryEvent<T> = (
   data: IQueryResponse,
   props: IQueryProps<T>

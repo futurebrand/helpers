@@ -49,6 +49,13 @@
       "require": "./dist/lib/modules/index.js",
       "default": "./dist/lib/modules/index.js"
     },
+    "./services": {
+      "types": "./dist/lib/services/index.d.ts",
+      "source": "./lib/services/index.ts",
+      "import": "./dist/lib/services/index.mjs",
+      "require": "./dist/lib/services/index.js",
+      "default": "./dist/lib/services/index.js"
+    },
     "./types": {
       "types": "./dist/lib/types/index.d.ts",
       "source": "./lib/types/index.ts",
@@ -69,6 +76,9 @@
       "modules": [
         "dist/lib/modules/index.d.ts"
       ],
+      "services": [
+        "dist/lib/services/index.d.ts"
+      ],
       "configs": [
         "dist/lib/configs/index.d.ts"
       ],
@@ -83,22 +93,22 @@
   "dependencies": {
     "@strapi/design-system": "^2.0.0-rc.11",
     "@strapi/icons": "^2.0.0-rc.11",
-    "@strapi/strapi": "^5.0.0",
+    "@strapi/strapi": "^5.0.1",
     "immer": "^10.1.1",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
-    "react-intl": "^6.6.8",
+    "react-intl": "^6.7.0",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
     "styled-components": "^6.1.13"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-node-resolve": "^15.3.0",
     "@strapi/pack-up": "^5.0.1",
     "@strapi/sdk-plugin": "^5.2.6",
-    "@strapi/typescript-utils": "^5.0.0",
+    "@strapi/typescript-utils": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/react": "^18.3.8",
+    "@types/react": "^18.3.9",
     "@types/react-dom": "^18.3.0",
     "@types/react-router-dom": "^5.3.3",
     "@types/styled-components": "^5.1.34",
@@ -106,7 +116,7 @@
     "tsc-alias": "^1.8.10",
     "tsx": "^4.19.1",
     "typescript": "5.6.2",
-    "vite": "^5.4.7",
+    "vite": "^5.4.8",
     "vite-tsconfig-paths": "^5.0.1"
   },
   "author": {

@@ -1,6 +1,6 @@
 import { Core } from "@strapi/strapi";
 import { DEFAULT_CONTENT_KEY } from "../../../../lib/modules";
-import { IContentService } from "@futurebrand/types";
+import { ContentsService } from "@futurebrand/services";
 
 const SERVICE_NAME = "plugin::futurebrand-strapi-helpers.contents";
 
@@ -18,7 +18,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const { type, ...props } = handleDefaultQueryProps(ctx);
 
     try {
-      const service = strapi.service(SERVICE_NAME) as IContentService;
+      const service = strapi.service(SERVICE_NAME) as ContentsService;
       const response = await service.query(type, props);
 
       if (!response) {
@@ -38,7 +38,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const { type, ...props } = handleDefaultQueryProps(ctx);
 
     try {
-      const service = strapi.service(SERVICE_NAME) as IContentService;
+      const service = strapi.service(SERVICE_NAME) as ContentsService;
       const response = await service.map(type, props);
 
       if (!response) {
@@ -58,7 +58,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const { type, ...props } = handleDefaultQueryProps(ctx);
 
     try {
-      const service = strapi.service(SERVICE_NAME) as IContentService;
+      const service = strapi.service(SERVICE_NAME) as ContentsService;
       const response = await service.single(type, props);
 
       if (!response) {
@@ -78,7 +78,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const { type, ...props } = handleDefaultQueryProps(ctx);
 
     try {
-      const service = strapi.service(SERVICE_NAME) as IContentService;
+      const service = strapi.service(SERVICE_NAME) as ContentsService;
       const response = await service.seo(type, props);
 
       if (!response) {
@@ -99,7 +99,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     const token = query.token ? String(query.token) : undefined;
 
     try {
-      const service = strapi.service(SERVICE_NAME) as IContentService;
+      const service = strapi.service(SERVICE_NAME) as ContentsService;
       const response = await service.preview(token);
 
       if (!response) {

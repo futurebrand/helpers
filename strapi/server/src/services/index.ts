@@ -1,7 +1,6 @@
-import contents from './contents';
-import global from './global';
+import { ContentsService, GlobalService } from "@futurebrand/services";
 
 export default {
-  contents,
-  global
+  contents: new ContentsService(),
+  global: new GlobalService(),
 };

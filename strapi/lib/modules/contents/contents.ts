@@ -1,31 +1,29 @@
 import { UID, Modules } from "@strapi/strapi";
-import ContentSingle from "./single/single";
-import ContentQuery from "./query/query";
+import { ContentSingle } from "./single";
+import { ContentQuery } from "./query";
 import { IQueryCallerParams, IQueryConfigs } from "./query/types";
 import { IContentKey } from "./types";
 import type { IServiceCaller } from "@futurebrand/types";
 import { LibraryList } from "@futurebrand/utils/library";
 import { ISingleConfigs } from "./single";
+import { IDocumentKind } from "./handler";
 
 export const DEFAULT_CONTENT_KEY = "default";
 
-class ContentModule {
-  protected readonly uid: UID.ContentType;
+class ContentModule<UID extends UID.ContentType = any> {
+  protected readonly uid: UID;
 
-  protected queries: LibraryList<IContentKey, ContentQuery>;
+  protected queries: LibraryList<IContentKey, ContentQuery<UID>>;
   protected singles: LibraryList<IContentKey, ContentSingle>;
 
-  constructor(
-    uid: UID.ContentType,
-    private entityService?: Modules.EntityService.EntityService
-  ) {
+  private documentService: Modules.Documents.Service;
+
+  constructor(uid: UID, documentService?: Modules.Documents.Service) {
     this.uid = uid;
-    this.queries = new LibraryList<IContentKey, ContentQuery>();
+    this.queries = new LibraryList<IContentKey, ContentQuery<UID>>();
     this.singles = new LibraryList<IContentKey, ContentSingle>();
 
-    if (!this.entityService) {
-      this.entityService = strapi.entityService;
-    }
+    this.documentService = documentService ?? strapi.documents;
   }
 
   public async register() {
@@ -77,31 +75,44 @@ class ContentModule {
       throw new Error(`Single with key ${key} does not exist`);
     }
 
-    return await single.get(params, locale);
+    return await single.get(params, { locale });
   }
 
-  public async unique(key: string, id: number, params: any = {}) {
+  public async unique(
+    key: string,
+    documentId: string,
+    kind: Partial<IDocumentKind> = {},
+    params: any = {}
+  ) {
     const single = this.singles.get(key);
 
     if (!single) {
       throw new Error(`Single with key ${key} does not exist`);
     }
 
-    return await single.unique(id, params);
+    return await single.unique(documentId, params, kind);
   }
 
-  public async getParams(key: string, id: number) {
+  public async getParams(
+    key: string,
+    documentId: string,
+    kind?: Partial<IDocumentKind>
+  ) {
     const single = this.singles.get(key);
 
     if (!single) {
       throw new Error(`Single with key ${key} does not exist`);
     }
 
-    return await single.getParams(id);
+    return await single.getParams(documentId, kind);
   }
 
-  public async preview(id: number, params: any = {}) {
-    return await this.unique(DEFAULT_CONTENT_KEY, id, params);
+  public async preview(
+    documentId: string,
+    kind?: Partial<IDocumentKind>,
+    params: any = {}
+  ) {
+    return await this.unique(DEFAULT_CONTENT_KEY, documentId, kind, params);
   }
 
   public async seo({
@@ -113,7 +124,7 @@ class ContentModule {
     if (!single) {
       throw new Error(`Single with key ${key} does not exist`);
     }
-    return await single.seo(params, locale);
+    return await single.seo(params, { locale });
   }
 
   public getSingle(key: IContentKey) {
@@ -121,7 +132,7 @@ class ContentModule {
   }
 
   public getQuery<T>(key: IContentKey) {
-    return this.queries.get(key) as ContentQuery<T> | undefined;
+    return this.queries.get(key) as ContentQuery<UID, T> | undefined;
   }
 
   public addSingle(key: IContentKey, data?: ISingleConfigs | ContentSingle) {
@@ -136,7 +147,7 @@ class ContentModule {
     const newContentSingle = new ContentSingle(
       this.uid,
       data,
-      this.entityService
+      this.documentService
     );
     return this.singles.push(key, newContentSingle);
   }
@@ -147,7 +158,7 @@ class ContentModule {
 
   public addQuery<T = any>(
     key: IContentKey,
-    data?: IQueryConfigs | ContentQuery<T>
+    data?: IQueryConfigs<UID> | ContentQuery<UID, T>
   ) {
     if (this.queries.has(key)) {
       throw new Error(`Query with key ${key} already exists`);
@@ -157,15 +168,17 @@ class ContentModule {
       return this.queries.push(key, data);
     }
 
-    const contentQuery = new ContentQuery<T>(
+    const contentQuery = new ContentQuery<UID, T>(
       this.uid,
       data,
-      this.entityService
+      this.documentService
     );
     return this.queries.push(key, contentQuery);
   }
 
-  public addDefaultQuery<T = any>(data?: IQueryConfigs | ContentQuery<T>) {
+  public addDefaultQuery<T = any>(
+    data?: IQueryConfigs<UID> | ContentQuery<UID, T>
+  ) {
     return this.addQuery(DEFAULT_CONTENT_KEY, data);
   }
 }

@@ -1,6 +1,6 @@
 import { UID, Core } from "@strapi/strapi";
-import { IContentService } from "@futurebrand/types";
 import Axios from "axios";
+import { ContentsService } from "@futurebrand/services";
 
 const SERVICE_NAME = "plugin::futurebrand-strapi-helpers.contents";
 
@@ -27,12 +27,12 @@ async function loadFrontendLiveUrl(
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
   links: async (ctx, next) => {
     const query = ctx.query ? ctx.query : {};
-    const id = query.id ? Number(query.id) : null;
+    const document = query.document ? String(query.document) : null;
     const api = query.api ? (String(query.api) as UID.ContentType) : null;
     const isDraft = query.draft ? query.draft === "true" : false;
     const locale = query.locale ? String(query.locale) : "";
 
-    if (!id || !api) {
+    if (!document || !api) {
       return ctx.badRequest(null, {
         error: "Invalid Params",
       });
@@ -50,14 +50,18 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
 
     try {
-      const service = strapi.service(SERVICE_NAME) as IContentService;
-      const contentType = await service.findContentType(api, id);
+      const service = strapi.service(SERVICE_NAME) as ContentsService;
+      const contentType = await service.findContentType(api, document);
 
       if (!contentType) {
         return ctx.notFound();
       }
 
-      const params = await service.getParams(contentType, id);
+      const params = await service.getParams(contentType, document, {
+        status: isDraft ? "draft" : "published",
+        locale,
+      });
+
       const live =
         isDraft || !params
           ? ""
@@ -67,7 +71,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               locale,
             });
 
-      const token = service.getPreviewToken(contentType, id, params);
+      const token = service.getPreviewToken(contentType, document, params);
 
       const preview = `${frontendUrl}${
         locale ? `/${locale}` : ""

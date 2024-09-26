@@ -4,46 +4,43 @@ import {
   BeforeQueryEvent,
   FilterEvent,
   IQueryConfigs,
+  IQueryParams,
   IQueryProps,
 } from "./types";
 import { UID, Modules } from "@strapi/strapi";
-import { ISort, IPublicationState } from "../types";
+import { ContentHandler, Pagination, Sort } from "../handler";
 
 const DEFAULT_PAGE_SIZE = 9;
-const DEFAULT_PUBLICATION_STATE: IPublicationState = "live";
-const DEFAULT_ORDER: ISort = { publishedAt: "desc" };
+const DEFAULT_ORDER: Sort = { publishedAt: "desc" };
 
-class ContentQuery<T = any> {
-  public sort: ISort;
+class ContentQuery<
+  UID extends UID.ContentType,
+  T = any
+> extends ContentHandler<UID> {
+  public sort: Sort<UID>;
   public filters: Record<string, any>;
-  public populate: any;
   public hasPagination: boolean;
   public pageSize: number;
-  public publicationState: IPublicationState;
 
   protected filterEvent: FilterEvent<T>;
-  protected beforeQueryEvent: BeforeQueryEvent<T>;
+  protected beforeQueryEvent: BeforeQueryEvent<T, UID>;
   protected afterQueryEvent: AfterQueryEvent<T>;
 
   constructor(
-    protected uid: UID.ContentType,
-    configs: IQueryConfigs = {},
-    private entityService?: Modules.EntityService.EntityService
+    protected uid: UID,
+    configs: IQueryConfigs<UID> = {},
+    documentService?: Modules.Documents.Service
   ) {
-    if (!this.entityService) {
-      this.entityService = strapi.entityService;
-    }
+    super(uid, configs, documentService);
 
     const strapiApiConfig = this.getStrapiApiConfig();
 
-    this.sort = configs.sort ?? DEFAULT_ORDER;
+    this.sort = configs.sort ?? (DEFAULT_ORDER as Sort<UID>);
     this.filters = configs.filters ?? {};
-    this.populate = configs.populate ?? {};
     this.hasPagination =
       configs.hasPagination ?? strapiApiConfig.withCount ?? true;
     this.pageSize =
       configs.pageSize ?? strapiApiConfig.defaultLimit ?? DEFAULT_PAGE_SIZE;
-    this.publicationState = configs.state ?? DEFAULT_PUBLICATION_STATE;
 
     // EVENTS
     this.filterEvent = async () => ({});
@@ -51,51 +48,58 @@ class ContentQuery<T = any> {
     this.afterQueryEvent = async (data) => data;
   }
 
-  private getStrapiApiConfig() {
-    return strapi?.config?.api ?? {};
-  }
-
-  public async register() {
-    // Do nothing
-    // Only for extending
-  }
-
   protected async getQueryParams(props: IQueryProps<T>) {
-    const { filters, page, locale } = props;
+    const { filters, locale } = props;
 
     const userFilters = await this.filterEvent(filters);
 
     const filterMerger = {
       ...this.filters,
       ...userFilters,
-      ...(locale ? { locale } : {}),
     };
 
     // Create Query Params
     const params = {
       filters: filterMerger,
       populate: this.populate,
-      publicationState: this.publicationState,
+      status: this.status,
       sort: this.sort,
-      ...(this.hasPagination
-        ? {
-            page,
-            pageSize: this.pageSize,
-          }
-        : {}),
       ...(locale ? { locale } : {}),
     };
 
     return this.beforeQueryEvent(params, props);
   }
 
+  /**
+   * getPagination
+   */
+  private async getPagination(
+    props: IQueryProps<T>,
+    query: IQueryParams<UID>
+  ): Promise<Pagination> {
+    const total = await this.document.count(query);
+
+    const pageCount = Math.ceil(total / this.pageSize);
+
+    return {
+      page: props.page ?? 1,
+      pageSize: this.pageSize,
+      pageCount,
+      total,
+    };
+  }
+
   public async query(props: IQueryProps<T>) {
     const query = await this.getQueryParams(props);
     if (this.hasPagination) {
-      const { results, pagination } = await strapi.entityService.findPage(
-        this.uid,
-        query as any
-      );
+      const pagination = await this.getPagination(props, query);
+      const start = (pagination.page - 1) * this.pageSize;
+
+      const results = await this.document.findMany({
+        start,
+        limit: pagination.pageSize,
+        ...query,
+      });
 
       return this.afterQueryEvent(
         {
@@ -124,7 +128,7 @@ class ContentQuery<T = any> {
     return this;
   }
 
-  public onBeforeQueryEvent(event: BeforeQueryEvent<T>) {
+  public onBeforeQueryEvent(event: BeforeQueryEvent<T, UID>) {
     this.beforeQueryEvent = event;
     return this;
   }

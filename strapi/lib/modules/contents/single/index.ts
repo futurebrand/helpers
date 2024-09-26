@@ -1,2 +1,2 @@
-export type * from './types'
-export { default as ContentSingle } from './single'
+export type * from "./types";
+export { default as ContentSingle } from "./single";
