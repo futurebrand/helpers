@@ -107,12 +107,16 @@ class ContentModule<UID extends UID.ContentType = any> {
     return await single.getParams(documentId, kind);
   }
 
-  public async preview(
-    documentId: string,
-    kind?: Partial<IDocumentKind>,
-    params: any = {}
-  ) {
-    return await this.unique(DEFAULT_CONTENT_KEY, documentId, kind, params);
+  public async preview(documentId: string, params: any = {}, locale: string) {
+    return await this.unique(
+      DEFAULT_CONTENT_KEY,
+      documentId,
+      {
+        locale,
+        status: "draft",
+      },
+      params
+    );
   }
 
   public async seo({

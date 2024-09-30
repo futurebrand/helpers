@@ -66,6 +66,7 @@ class ContentSingleUnique extends ContentSingleBlocks {
     const fields = this.pathConfigs
       .filter((config) => config.mapField !== false)
       .map((config) => config.key);
+
     const params = fields.reduce((acc, field) => {
       return {
         ...acc,

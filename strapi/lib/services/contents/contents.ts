@@ -60,10 +60,10 @@ export class ContentsService {
       throw new Error("Invalid token");
     }
 
-    const { type, document, params } = this.previewToken.decode(token);
+    const { type, document, params, locale } = this.previewToken.decode(token);
 
     const service = this.getContentService(type);
-    const data = await service.preview(document, params);
+    const data = await service.preview(document, params, locale);
 
     return {
       data,
@@ -72,8 +72,13 @@ export class ContentsService {
     };
   }
 
-  public getPreviewToken(type: string, document: string, params: any) {
-    return this.previewToken.tokenizer({ type, document, params });
+  public getPreviewToken(
+    type: string,
+    document: string,
+    params: any,
+    locale: string
+  ) {
+    return this.previewToken.tokenizer({ type, document, params, locale });
   }
 
   public async unique(

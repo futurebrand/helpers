@@ -19,8 +19,11 @@ class ContentSingleLifecycle extends ContentSingleMap {
 
     await this.verifyUniqueKeyFields(data, documentId);
 
-    if (documentId && data.pageSeo && data.locale) {
-      await this.onUpdateSEO(documentId, data.locale);
+    if (documentId && data.pageSeo && data.locale && isUpdate) {
+      await this.onUpdateSEO(documentId, {
+        status: data.publishedAt ? "published" : "draft",
+        locale: data.locale,
+      });
     }
   }
 

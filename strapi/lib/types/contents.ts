@@ -1,5 +1,4 @@
-import { UID } from "@strapi/strapi";
-import { ContentClient, GlobalClient } from "@futurebrand/modules";
+import { GlobalClient } from "@futurebrand/modules";
 import { IContentKey, IPagination } from "@futurebrand/modules/contents/types";
 
 export interface IQueryResponse {
@@ -15,6 +14,7 @@ export interface IContentMap {
 export interface IPreviewParams {
   type: string;
   document: string;
+  locale: string;
   params: any;
 }
 

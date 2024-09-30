@@ -10,16 +10,11 @@ export default {
       name: PLUGIN_ID,
     };
 
-    app.addReducers(reducers);
     app.registerPlugin(plugin);
+    app.addReducers(reducers);
   },
 
   bootstrap(app: any) {
-    app
-      .getPlugin("content-manager")
-      .injectComponent("editView", "right-links", {
-        name: "futurebrand-helpers-preview-links",
-        Component: PreviewButtons,
-      });
+    app.getPlugin("content-manager").apis.addDocumentAction([PreviewButtons]);
   },
 };

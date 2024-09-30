@@ -71,7 +71,12 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
               locale,
             });
 
-      const token = service.getPreviewToken(contentType, document, params);
+      const token = service.getPreviewToken(
+        contentType,
+        document,
+        params,
+        locale
+      );
 
       const preview = `${frontendUrl}${
         locale ? `/${locale}` : ""

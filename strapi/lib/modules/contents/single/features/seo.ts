@@ -14,10 +14,14 @@ class ContentSingleSeo extends ContentSingleGet {
   }
 
   public async onUpdateSEO(documentId: string, kind: IDocumentKind) {
-    const params = await this.getParams(documentId, kind);
-    const cache = await this.getSEOCache(params, kind);
-    if (cache) {
-      cache.invalidate();
+    try {
+      const params = await this.getParams(documentId, kind);
+      const cache = await this.getSEOCache(params, kind);
+      if (cache) {
+        cache.invalidate();
+      }
+    } catch (error) {
+      return;
     }
   }
 

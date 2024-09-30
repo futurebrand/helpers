@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useFetchClient, useNotification } from "@strapi/strapi/admin";
 
 import * as REDUCER from "../reducers";
-import useLocale from "./use-locale";
 import { PLUGIN_ID } from "../constants";
 
 interface IReducerState {
@@ -15,14 +14,18 @@ interface IReducerState {
   isLoaded: boolean;
 }
 
-const usePreviewLinks = (api?: string, isDraft?: boolean, document?: any) => {
+const usePreviewLinks = (
+  api: string,
+  isDraft: boolean,
+  documentId?: string,
+  locale?: string
+) => {
   const dispatch = useDispatch();
   const fetchClient = useFetchClient();
   const toggleNotification = useNotification();
   const { links, isLoading, isLoaded } = useSelector(
     (state: any) => state[PLUGIN_ID] as IReducerState
   );
-  const locale = useLocale();
 
   const loadData = useCallback(async () => {
     try {
@@ -34,7 +37,7 @@ const usePreviewLinks = (api?: string, isDraft?: boolean, document?: any) => {
         "/futurebrand-strapi-helpers/preview",
         {
           params: {
-            document,
+            documentId,
             api,
             draft: isDraft,
             locale,
@@ -57,7 +60,7 @@ const usePreviewLinks = (api?: string, isDraft?: boolean, document?: any) => {
         type: REDUCER.PREVIEW_ERROR,
       });
     }
-  }, [dispatch, fetchClient, toggleNotification, document, isDraft, api]);
+  }, [dispatch, fetchClient, toggleNotification, documentId, isDraft, api]);
 
   useEffect(() => {
     if (isLoaded) {
@@ -70,11 +73,11 @@ const usePreviewLinks = (api?: string, isDraft?: boolean, document?: any) => {
   }, [isLoaded]);
 
   useEffect(() => {
-    if (isLoading || isLoaded || !document) {
+    if (isLoading || isLoaded || !documentId || !locale) {
       return;
     }
     loadData();
-  }, [isLoading, isLoaded, loadData, document]);
+  }, [isLoading, isLoaded, loadData, documentId, locale]);
 
   if (isLoading && !isLoaded) {
     return null;
