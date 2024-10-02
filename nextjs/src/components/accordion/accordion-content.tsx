@@ -12,11 +12,12 @@ const AccordionContent: React.FC<AccordionContentProps> = ({
   return (
     <div
       className={twMerge([
-        'accordion-content overflow-hidden transition-all',
+        'accordion-content overflow-hidden transition-all ease-in-out',
         className,
       ])}
       style={{
         maxHeight: 'var(--accordion-height)',
+        transitionDuration: 'var(--accordion-duration)',
         ...(rest.style ?? {}),
       }}
       {...rest}

@@ -1,6 +1,5 @@
 import usePreviewLinks from "../../hooks/use-preview-links";
-import { Link } from "@strapi/icons";
-import { Eye } from "@strapi/icons";
+import { Link, Eye } from "@strapi/icons";
 import type { DocumentActionComponent } from "@strapi/content-manager/strapi-admin";
 
 const preview = {

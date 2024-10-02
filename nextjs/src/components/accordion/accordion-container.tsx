@@ -6,18 +6,25 @@ import { twMerge } from 'tailwind-merge'
 export interface AccordionContainerProps
   extends React.HTMLProps<HTMLDivElement> {
   isOpen?: boolean
+  transitionScale?: number
 }
+const TRANSITION_SCALE = 0.75
 
 const AccordionContainer: React.FC<AccordionContainerProps> = ({
   children,
   className,
   isOpen,
+  transitionScale = TRANSITION_SCALE,
   ...rest
 }) => {
   const [contentHeight, setContentHeight] = useState<number>(0)
   const [internOpened, setInternOpened] = useState(isOpen ?? false)
 
-  const contentReference = useRef<HTMLDivElement>(null)
+  const containerReference = useRef<HTMLDivElement>(null)
+
+  const transitionDuration = useMemo(() => {
+    return Math.max(300, Math.min(1000, contentHeight * transitionScale))
+  }, [contentHeight, transitionScale])
 
   const isAccordionOpened = useMemo(
     () => (isOpen != null ? isOpen : internOpened),
@@ -25,9 +32,13 @@ const AccordionContainer: React.FC<AccordionContainerProps> = ({
   )
 
   useEffect(() => {
-    const content = contentReference.current
+    const container = containerReference.current
 
+    if (!container) return
+
+    const content = container.querySelector('.accordion-content')
     if (!content) return
+
     setContentHeight(content.scrollHeight)
     const mutationObserver = new MutationObserver(function () {
       setContentHeight(content.scrollHeight)
@@ -48,17 +59,19 @@ const AccordionContainer: React.FC<AccordionContainerProps> = ({
       return
     }
 
-    const content = contentReference.current
+    const container = containerReference.current
 
-    if (!content) return
+    if (!container) return
 
     const button =
-      content.querySelector('.accordion-button') ??
-      content.querySelector('button')
+      container.querySelector('.accordion-button') ??
+      container.querySelector('button')
+
     if (!button) return
 
     const onClickButton = () => {
       setInternOpened((current) => !current)
+      console.log('click')
     }
 
     button.addEventListener('click', onClickButton)
@@ -76,7 +89,7 @@ const AccordionContainer: React.FC<AccordionContainerProps> = ({
 
   return (
     <div
-      {...rest}
+      ref={containerReference}
       className={twMerge([
         'accordion',
         className,
@@ -84,10 +97,12 @@ const AccordionContainer: React.FC<AccordionContainerProps> = ({
       ])}
       style={
         {
-          '--accordion-height': `${contentHeight}px`,
+          '--accordion-height': isAccordionOpened ? `${contentHeight}px` : 0,
+          '--accordion-duration': `${transitionDuration}ms`,
           ...(rest.style ?? {}),
         } as any
       }
+      {...rest}
     >
       {children}
     </div>
