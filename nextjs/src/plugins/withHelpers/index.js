@@ -5,6 +5,7 @@ const {
   getSiteUrl,
   getDeployEnvironnement,
 } = require('./utils')
+const getCacheHandler = require('../cache-handler')
 
 /**
  * @param {import('./types').NextWithHelpersConfig} nextConfig
@@ -71,8 +72,7 @@ const withHelpers = ({ futureBrandHelpers, ...nextConfig }) => {
       deviceSizes: [375, 480, 768, 1024, 1280, 1360, 1440],
       minimumCacheTTL: 31536000,
     },
-    cacheHandler:
-      nextConfig.cacheHandler ?? require.resolve('../cache-handler'),
+    cacheHandler: getCacheHandler(nextConfig.cacheHandler),
     webpack: (config, context) => {
       const { dev, isServer } = context
 

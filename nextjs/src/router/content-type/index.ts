@@ -35,7 +35,7 @@ class RouterContentType {
     const contentTypes = this.getLocaleSlugs(locale)
 
     for (const [type, regex] of Object.entries(contentTypes)) {
-      const pathRegex = pathToRegexp.pathToRegexp(regex)
+      const pathRegex = pathToRegexp.pathToRegexp(regex) as unknown as RegExp
       if (pathRegex.exec(path)) {
         return type as ContentTypes
       }
@@ -79,7 +79,7 @@ class RouterContentType {
           return acc
         }
 
-        const modifier = keys[keyIndex].modifier
+        const modifier = (keys[keyIndex] as any).modifier
         const isArrayReturn = modifier === '*'
 
         const setStringValue = (value?: string) => {

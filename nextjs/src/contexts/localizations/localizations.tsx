@@ -9,6 +9,7 @@ export interface ILocalizationsContext {
   locale: string
   locales: string[]
   routes: ILocalizationRoute[]
+  isDefaultLocale: boolean
   updateRoutes: (localizations?: ILocalizationRoute[]) => void
 }
 
@@ -34,6 +35,10 @@ const LocalizationsContextProvider = ({
   const [currentRoutes, setCurrentRoutes] = React.useState<
     ILocalizationRoute[]
   >([])
+  const isDefaultLocale = useMemo(
+    () => locale === defaultLocale,
+    [locale, defaultLocale]
+  )
 
   const canNavigateRoutes = useMemo(() => {
     return currentRoutes.filter((route) => route.locale !== locale)
@@ -80,6 +85,7 @@ const LocalizationsContextProvider = ({
         locales,
         routes: canNavigateRoutes,
         updateRoutes,
+        isDefaultLocale,
       }}
     >
       {children}

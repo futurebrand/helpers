@@ -4,6 +4,7 @@ import React, { type PropsWithChildren } from 'react'
 
 import { DictonaryProvider } from './dictionary'
 import { LocalizationsProvider } from './localizations'
+import { PreviewProvider } from './preview'
 
 interface Props extends I18nConfig {
   locale: string
@@ -18,13 +19,17 @@ const ContextsDefault: React.FC<PropsWithChildren<Props>> = async ({
   dictionary,
 }) => {
   return (
-    <LocalizationsProvider
-      locale={locale}
-      defaultLocale={defaultLocale}
-      locales={locales}
-    >
-      <DictonaryProvider dictionary={dictionary}>{children}</DictonaryProvider>
-    </LocalizationsProvider>
+    <PreviewProvider>
+      <LocalizationsProvider
+        locale={locale}
+        defaultLocale={defaultLocale}
+        locales={locales}
+      >
+        <DictonaryProvider dictionary={dictionary}>
+          {children}
+        </DictonaryProvider>
+      </LocalizationsProvider>
+    </PreviewProvider>
   )
 }
 
