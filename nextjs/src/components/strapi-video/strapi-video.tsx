@@ -1,13 +1,17 @@
 'use client'
 
+import { useIntersectObserver } from '@futurebrand/hooks/use-intersect-observer'
 import type {
   IStrapiMedia,
   IStrapiMediaAttributes,
 } from '@futurebrand/types/strapi'
-import React, { useEffect, useState } from 'react'
-
 import { getCMSMediaUrl } from '@futurebrand/utils'
-import { useIntersectObserver } from '@futurebrand/hooks/use-intersect-observer'
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react'
 
 type Properties = {
   autoLoad?: boolean
@@ -84,6 +88,13 @@ const CmsVideo: React.ForwardRefRenderFunction<IVideoRef, Properties> = (
     }
   }, [])
 
+  useImperativeHandle(ref, () => ({
+    isLoaded,
+    element: videoReference.current,
+    play: playVideo,
+    pause: pauseVideo,
+  }))
+
   if (!attributes) {
     return
   }
@@ -101,9 +112,11 @@ const CmsVideo: React.ForwardRefRenderFunction<IVideoRef, Properties> = (
         ? { autoPlay: true, muted: true }
         : { preload: isVisible ? 'auto' : 'none' })}
     >
-      <source src={getCMSMediaUrl(attributes.url)} type={attributes.mime} />
+      {(isVisible || priority) && (
+        <source src={getCMSMediaUrl(attributes.url)} type={attributes.mime} />
+      )}
     </video>
   )
 }
 
-export default CmsVideo
+export default React.forwardRef(CmsVideo)

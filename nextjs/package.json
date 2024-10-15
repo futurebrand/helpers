@@ -1,6 +1,6 @@
 {
   "name": "@futurebrand/helpers-nextjs",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "FutureBrand Helpers",
   "scripts": {
     "build": "tsc && tsc-alias",
@@ -18,11 +18,11 @@
   "homepage": "https://github.com/futurebrand/helpers#readme",
   "main": "dist/index.js",
   "files": [
-    "dist",
-    "libs"
+    "dist"
   ],
   "exports": {
     "./plugins": "./dist/plugins/index.js",
+    "./plugins/tailwindcss": "./dist/plugins/tailwindcss/index.js",
     "./plugins/eslint": "./dist/plugins/eslint/index.mjs",
     "./components": "./dist/components/index.js",
     "./configs": "./dist/configs/index.js",

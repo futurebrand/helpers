@@ -5,7 +5,10 @@ import type HelpersRouter from '../router'
 import type { RouterSlugList, RouterSlugs } from '../types'
 
 class RouterContentType {
-  constructor (private router: HelpersRouter, public slugs: RouterSlugs) {}
+  constructor(
+    private readonly router: HelpersRouter,
+    public slugs: RouterSlugs
+  ) {}
 
   public getLocaleSlugs(locale: string): RouterSlugList {
     let contentTypes = this.slugs[locale]
@@ -136,7 +139,6 @@ class RouterContentType {
     const contentTypes = this.getLocaleSlugs(locale)
     return Object.keys(contentTypes) as ContentTypes[]
   }
-  
 }
 
 export default RouterContentType

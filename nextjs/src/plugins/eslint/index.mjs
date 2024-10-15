@@ -38,6 +38,7 @@ export default [
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/consistent-type-assertions": "off",
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
       "react/react-in-jsx-scope": "off",
       "prettier/prettier": [
         "error",

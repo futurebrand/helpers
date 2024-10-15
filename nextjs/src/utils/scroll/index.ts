@@ -23,3 +23,18 @@ export const onScroll = (callback: ScrollCallback) => {
     window.removeEventListener('scroll', updatePosition)
   }
 }
+
+const SCROLL_OFFSET_SCALE = 0.3
+
+export function smoothScrollTo(id: string, offsetScale = SCROLL_OFFSET_SCALE) {
+  const element = document.getElementById(id)
+  if (element) {
+    const elementTop = element.getBoundingClientRect().top
+    const scrollTop = window.scrollY
+    const offset = window.innerHeight * offsetScale
+    window.scrollTo({
+      top: elementTop + scrollTop - offset,
+      behavior: 'smooth',
+    })
+  }
+}

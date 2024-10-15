@@ -1,3 +1,4 @@
+import type { ClassNameValue } from 'tailwind-merge'
 import { tv } from 'tailwind-variants'
 
 const MAX_DELAY = 'delay-4000'
@@ -54,9 +55,20 @@ const ANIMATIONS_DELAY: Record<number, string> = {
  *    </div>
  *  </>
  * )
+ *
+ * Shorter version:
+ * <div className={animate(0)}>
+ *   My animated content 1
+ * </div>
+ * <div className={animate(1, 'flex')}>
+ *  My animated content 2
+ * </div>
+ * <div className={animate(2, ['flex', condition ? '' : ''])}>
+ *  My animated content 3
+ * </div>
  */
 
-export const animate = tv(
+const animateVariant = tv(
   {
     base: 'animation-content',
     variants: {
@@ -74,3 +86,15 @@ export const animate = tv(
     responsiveVariants: true,
   }
 )
+
+type ObjectParams = Parameters<typeof animateVariant>[0]
+
+export function animate(
+  paramsOrIndex?: number | ObjectParams,
+  className?: string | ClassNameValue
+): string {
+  if (typeof paramsOrIndex === 'number') {
+    return animateVariant({ className, index: paramsOrIndex })
+  }
+  return animateVariant(paramsOrIndex)
+}

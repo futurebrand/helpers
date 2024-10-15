@@ -1,8 +1,10 @@
+import type {
+  IStrapiMedia,
+  IStrapiMediaAttributes,
+} from '@futurebrand/types/strapi'
 import { getCMSMediaUrl } from '@futurebrand/utils/media'
 import Image, { type ImageProps } from 'next/image'
 import React from 'react'
-
-import type { IStrapiMedia, IStrapiMediaAttributes } from '@futurebrand/types/strapi'
 
 type Properties = {
   image?: IStrapiMedia | IStrapiMediaAttributes
@@ -17,10 +19,17 @@ const StrapiImage: React.FC<Properties> = ({
   fill,
   ...rest
 }) => {
-  const attributes = 'url' in image ? image : (image as any).data?.attributes as IStrapiMediaAttributes
+  if (!image) {
+    return null
+  }
+
+  const attributes =
+    'url' in image
+      ? image
+      : ((image as any).data?.attributes as IStrapiMediaAttributes)
 
   if (!attributes) {
-    return
+    return null
   }
 
   const { url, width, height, mime, alternativeText } = attributes
@@ -34,18 +43,20 @@ const StrapiImage: React.FC<Properties> = ({
         width={width}
         height={height}
         alt={alternativeText || 'Image without alt'}
-        loading={rest.loading ?? priority ? 'eager' : 'lazy'}
+        loading={(rest.loading ?? priority) ? 'eager' : 'lazy'}
         {...(rest as any)}
       />
     )
   }
 
-  const imageSize = fill ? {
-    fill: true
-  } : {
-    width,
-    height
-  }
+  const imageSize = fill
+    ? {
+        fill: true,
+      }
+    : {
+        width,
+        height,
+      }
 
   return (
     <Image
