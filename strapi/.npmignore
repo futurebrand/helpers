@@ -17,3 +17,13 @@ yarn.lock
 
 .github
 .github/*
+
+build.ts
+admin
+admin/*
+
+lib
+lib/*
+
+server
+server/*

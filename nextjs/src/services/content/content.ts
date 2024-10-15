@@ -1,10 +1,26 @@
+import {
+  type FetcherClient,
+  type FetcherError,
+  type IFetchResponse,
+} from '@futurebrand/modules/fetcher'
+import {
+  cmsApi,
+  cmsContentPath,
+  type ICMSContentApiPath,
+} from '@futurebrand/services/cms'
+import type {
+  IContent,
+  IContentMap,
+  IContentResponse,
+} from '@futurebrand/types/contents'
 import { notFound, redirect } from 'next/navigation'
 
-import { IFetchResponse, type FetcherClient, FetcherError } from '@futurebrand/modules/fetcher'
-import type { IContent, IContentMap, IContentResponse } from '@futurebrand/types/contents'
-import { IContentServiceConfigs, IQueryCallerParams, IServiceCallerProps, ISingleCallerProps } from './types'
-
-import { cmsApi, cmsContentPath, ICMSContentApiPath } from '@futurebrand/services/cms'
+import {
+  type IContentServiceConfigs,
+  type IQueryCallerParams,
+  type IServiceCallerProps,
+  type ISingleCallerProps,
+} from './types'
 
 class ContentService {
   private readonly fetcher: FetcherClient
@@ -21,19 +37,19 @@ class ContentService {
     this.revalidate = revalidate
   }
 
-  public async createRequest<T = any>(path: string, props: IServiceCallerProps<any> | any) {
-    return await this.fetcher.get<T>(
-      path,
-      {
-        params: props,
-        revalidate: this.revalidate
-      }
-    )
+  public async createRequest<T = any>(
+    path: string,
+    props: IServiceCallerProps<any> | any
+  ) {
+    return await this.fetcher.get<T>(path, {
+      params: props,
+      revalidate: this.revalidate,
+    })
   }
 
-  public async single<T extends IContent>(props: ISingleCallerProps<T>): Promise<T> {
-    'use server'
-
+  public async single<T extends IContent>(
+    props: ISingleCallerProps<T>
+  ): Promise<T> {
     if (props.previewData) {
       return props.previewData
     }
@@ -58,53 +74,59 @@ class ContentService {
     if (contentRedirect?.enabled) {
       redirect(contentRedirect.url)
     }
-  
+
     return pageData
   }
 
-  public async seo<T = IContent>(props: IServiceCallerProps<T>): Promise<T> {
-    'use server'
-
+  public async seo<T = IContent>(
+    props: IServiceCallerProps<T>,
+    revalidate?: number
+  ): Promise<T> {
     let response: IFetchResponse<T>
 
     try {
-      response = await this.createRequest<T>(this.contentPath.seo, props)
+      response = await this.createRequest<T>(this.contentPath.seo, {
+        ...props,
+        revalidate: revalidate ?? this.revalidate,
+      })
     } catch (error) {
       console.error((error as FetcherError).body)
       throw new Error(`Error on get seo ${JSON.stringify(props.params)}`)
     }
-  
+
     return response.data
   }
 
   public async preview<T = IContent>(token: string): Promise<T> {
-    'use server'
-
     let response: IFetchResponse<T>
 
     try {
       response = await this.createRequest<T>(this.contentPath.preview, {
-        token
+        token,
       })
     } catch (error) {
       console.error((error as FetcherError).body)
       throw new Error('Error on get preview')
     }
-  
+
     return response.data
   }
 
-  public async query<T = IContent[]>(props: IServiceCallerProps<IQueryCallerParams>): Promise<IContentResponse<T>> {
-    'use server'
-
-    const response = await this.createRequest<IContentResponse<T>>(this.contentPath.query, props)
+  public async query<T = IContent[]>(
+    props: IServiceCallerProps<IQueryCallerParams>
+  ): Promise<IContentResponse<T>> {
+    const response = await this.createRequest<IContentResponse<T>>(
+      this.contentPath.query,
+      props
+    )
     return response.data
   }
 
   public async map(props: IServiceCallerProps<undefined>) {
-    'use server'
-
-    const response = await this.createRequest<IContentMap[]>(this.contentPath.map, props)
+    const response = await this.createRequest<IContentMap[]>(
+      this.contentPath.map,
+      props
+    )
     return response.data
   }
 }

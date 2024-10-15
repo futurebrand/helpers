@@ -1,27 +1,20 @@
-
-import PreviewButtons from './components/preview-buttons';
-import pluginPkg from '../../package.json'
-import pluginId from './pluginId'
-import reducers from './reducers/produce'
-
-const name = pluginPkg.strapi.name
+import PreviewButtons from "./components/preview-buttons";
+import { PLUGIN_ID } from "./constants";
+import reducers from "./reducers/produce";
 
 export default {
   register(app: any) {
     const plugin = {
-      id: pluginId,
+      id: PLUGIN_ID,
       isReady: true,
-      name,
-    }
-    
+      name: PLUGIN_ID,
+    };
+
+    app.registerPlugin(plugin);
     app.addReducers(reducers);
-    app.registerPlugin(plugin)
   },
 
   bootstrap(app: any) {
-    app.injectContentManagerComponent('editView', 'right-links', {
-      name: 'futurebrand-helpers-preview-links',
-      Component: PreviewButtons
-    });
-  }
-}
+    app.getPlugin("content-manager").apis.addDocumentAction([PreviewButtons]);
+  },
+};

@@ -6,40 +6,42 @@ export interface ICSPConfigs {
   styleSrc?: string[]
   frameSrc?: string[]
   imgSrc?: string[]
+  fontSrc?: string[]
+  objectSrc?: string[]
 }
 
 export interface IBuildRedirect {
-  source: string;
-  destination: string;
-  permanent?: boolean;
+  source: string
+  destination: string
+  permanent?: boolean
 }
 
 export type IGetSlugsFunction = (locale: string) => Record<string, string>
 
 export interface IStrapiCMSConfig {
-  type: 'strapi',
-  url: string,
-  token: string,
-  adminEnvKey?: string,
+  type: 'strapi'
+  url: string
+  token: string
+  adminEnvKey?: string
 }
 
 export interface IWordpressCMSConfig {
-  type: 'wp',
-  url: string,
+  type: 'wp'
+  url: string
 }
 
 export type ICMSConfig = IStrapiCMSConfig | IWordpressCMSConfig
 
-export interface IHelpersConfig { 
-  cms: ICMSConfig,
-  cdn?: string,
-  siteUrl: string,
-  domains?: string[],
+export interface IHelpersConfig {
+  cms: ICMSConfig
+  cdn?: string
+  siteUrl: string
+  domains?: string[]
   redirects?: IBuildRedirect[]
   csp?: ICSPConfigs
   revalidate?: number
 }
 
-export interface NextWithHelpersConfig extends NextConfig{
+export interface NextWithHelpersConfig extends NextConfig {
   futureBrandHelpers: IHelpersConfig
 }

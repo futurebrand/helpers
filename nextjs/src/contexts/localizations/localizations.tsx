@@ -1,17 +1,16 @@
 'use client'
 
+import { type I18nConfig } from '@futurebrand/services'
+import { type ILocalizationRoute } from '@futurebrand/types/contents'
 import React, { createContext, useCallback, useMemo } from 'react'
-import { ILocalizationRoute } from '@futurebrand/types/contents'
-import { I18nConfig } from '@futurebrand/services'
 
 export interface ILocalizationsContext {
   defaultLocale: string
   locale: string
   locales: string[]
   routes: ILocalizationRoute[]
-  updateRoutes: (
-    localizations?: ILocalizationRoute[]
-  ) => void
+  isDefaultLocale: boolean
+  updateRoutes: (localizations?: ILocalizationRoute[]) => void
 }
 
 const initialState: Partial<ILocalizationsContext> = {
@@ -31,11 +30,15 @@ const LocalizationsContextProvider = ({
   children,
   locale,
   locales,
-  defaultLocale
+  defaultLocale,
 }: React.PropsWithChildren<ILocalizationsContextProps>) => {
   const [currentRoutes, setCurrentRoutes] = React.useState<
-  ILocalizationRoute[]
+    ILocalizationRoute[]
   >([])
+  const isDefaultLocale = useMemo(
+    () => locale === defaultLocale,
+    [locale, defaultLocale]
+  )
 
   const canNavigateRoutes = useMemo(() => {
     return currentRoutes.filter((route) => route.locale !== locale)
@@ -74,7 +77,6 @@ const LocalizationsContextProvider = ({
     [AvaibleRoutes]
   )
 
-
   return (
     <LocalizationsContext.Provider
       value={{
@@ -83,6 +85,7 @@ const LocalizationsContextProvider = ({
         locales,
         routes: canNavigateRoutes,
         updateRoutes,
+        isDefaultLocale,
       }}
     >
       {children}
