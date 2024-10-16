@@ -6,13 +6,15 @@ import { Link } from "@strapi/icons";
 import { Eye } from "@strapi/icons";
 
 import FutureIcon from "./logo";
+import useLocale from "src/hooks/use-locale";
 
 const PreviewButtons: React.FC = () => {
   const { modifiedData, layout, hasDraftAndPublish } =
     useCMEditViewDataManager();
   const isDraft = hasDraftAndPublish && !modifiedData.publishedAt;
   const uid = layout?.uid;
-  const links = usePreviewLinks(uid, isDraft, modifiedData.id);
+  const locale = useLocale(modifiedData);
+  const links = usePreviewLinks(uid, isDraft, modifiedData.id, locale);
 
   if (!modifiedData.id) return null;
 
@@ -38,8 +40,8 @@ const PreviewButtons: React.FC = () => {
             size="S"
             startIcon={<Link />}
             style={{ width: "100%", textDecoration: "none" }}
-            href={links?.live ?? "/"}
-            disabled={!links?.live}
+            href={typeof links?.live === "string" ? links.live : "/"}
+            disabled={!links?.live || typeof links?.live !== "string"}
             variant="secondary"
             target="_blank"
             rel="noopener noreferrer"

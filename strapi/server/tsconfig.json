@@ -1,0 +1,12 @@
+{
+  "extends": "@strapi/typescript-utils/tsconfigs/server",
+  "include": ["./src", "../lib"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./.tsbuildinfo",
+    "rootDir": "../",
+    "baseUrl": ".",
+    "paths": {
+      "@futurebrand/*": ["../lib/*"]
+    }
+  }
+}

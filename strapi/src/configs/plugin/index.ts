@@ -1,1 +1,0 @@
-export { getPluginConfigs as getHelpersPluginConfigs } from './plugin'
