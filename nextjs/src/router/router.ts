@@ -1,28 +1,34 @@
-import { ResolvingMetadata } from "next";
-import RouterContentType from "./content-type";
-import CurrentRoute from "./current";
-import RouterLocalization from "./localization";
-import RouterSEO from "./seo";
-import { IRoute, IRouterConfig } from "./types";
-import RouterMap from "./map";
-import { ContentTypes } from "@futurebrand/types/contents";
+import { ContentService } from '@futurebrand/services'
+import { type ContentTypes } from '@futurebrand/types/contents'
+import { type ResolvingMetadata } from 'next'
+
+import RouterContentType from './content-type'
+import CurrentRoute from './current'
+import RouterLocalization from './localization'
+import RouterMap from './map'
+import RouterSEO from './seo'
+import { type IRoute, type IRouterConfig } from './types'
 
 class HelpersRouter {
   public isInitialized: boolean
-  
+
   public localization: RouterLocalization
   public contentType: RouterContentType
   public seo: RouterSEO
   public map: RouterMap
 
+  public contentService: ContentService
+
   public current: CurrentRoute
 
-  constructor (configs: IRouterConfig) {
+  constructor(configs: IRouterConfig) {
     if ('window' in globalThis) {
       throw new Error('Router should be used only in server side')
     }
 
-    this.isInitialized = false;
+    this.contentService = configs.contentService ?? new ContentService()
+
+    this.isInitialized = false
     this.contentType = new RouterContentType(this, configs.slugs)
     this.localization = new RouterLocalization(this)
     this.current = new CurrentRoute(this)
@@ -49,10 +55,13 @@ class HelpersRouter {
   /**
    * Get content SEO
    */
-  public async getSEO(router: IRoute, parent: ResolvingMetadata, revalidate: number) {
+  public async getSEO(
+    router: IRoute,
+    parent: ResolvingMetadata,
+    revalidate: number
+  ) {
     this.setRoute(router)
-    this.seo.setRevalidate(revalidate)
-    return this.seo.getData(parent)
+    return await this.seo.getData(parent, revalidate)
   }
 
   /**
@@ -69,28 +78,17 @@ class HelpersRouter {
   /**
    * Get content path
    */
-  public getPath(
-    params: any,
-    locale: string,
-    type: ContentTypes = 'pages'
-  ) {
+  public getPath(params: any, locale: string, type: ContentTypes = 'pages') {
     return this.contentType.getPathFromParams(params, locale, type)
   }
 
   /**
    * Get content url
    */
-  public getUrl(
-    params: any,
-    locale: string,
-    type: ContentTypes = 'pages'
-  ) {
+  public getUrl(params: any, locale: string, type: ContentTypes = 'pages') {
     const path = this.getLocalizedPath(params, locale, type)
     return this.contentType.getPathUrl(path)
   }
-
 }
-
-
 
 export default HelpersRouter

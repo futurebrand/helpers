@@ -1,0 +1,11 @@
+{
+  "extends": "@strapi/typescript-utils/tsconfigs/admin",
+  "include": ["./src"],
+  "exclude": ["node_modules", "../server", "../lib"],
+  "compilerOptions": {
+    "rootDir": "../",
+    "baseUrl": ".",
+    "moduleDetection": "auto",
+    "forceConsistentCasingInFileNames": false
+  }
+}

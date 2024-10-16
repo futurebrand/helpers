@@ -4,9 +4,9 @@ import React from 'react'
 
 const { useEffect, useState, useRef } = React
 
-export function useIntersectObserver() {
+export function useIntersectObserver<T = any>() {
   const [isVisible, setVisible] = useState(false)
-  const reference = useRef(null)
+  const reference = useRef<T>(null)
 
   useEffect(() => {
     if (!reference.current || isVisible) return
@@ -28,5 +28,5 @@ export function useIntersectObserver() {
     }
   }, [isVisible])
 
-  return [isVisible, reference] as [boolean, any]
+  return [isVisible, reference] as [boolean, React.MutableRefObject<T>]
 }

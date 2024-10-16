@@ -1,1 +1,1 @@
-export { default, LinkPropeties } from './link'
+export { default, type LinkPropeties } from './link'

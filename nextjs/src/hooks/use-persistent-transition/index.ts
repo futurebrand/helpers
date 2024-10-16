@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react"
-import { useLocalStorage } from "../use-local-storage"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react'
+
+import { useLocalStorage } from '../use-local-storage'
 
 type TransitionFunction<T> = () => Promise<T>
 
@@ -17,25 +25,32 @@ interface IPersistentTransition<T> {
 }
 
 export function usePersistentTransition<T>(
-  key: string, 
+  key: string,
   initialTransition: TransitionFunction<T>
-) : IPersistentTransition<T> {
-  const [state, setState] = useLocalStorage<ITransitionState<T>>(key, { response: null, mounted: false }, null)
+): IPersistentTransition<T> {
+  const [state, setState] = useLocalStorage<ITransitionState<T>>(
+    key,
+    { response: null, mounted: false },
+    null
+  )
   const [isPending, internalStartTransition] = useTransition()
   const [isMounted, setIsMounted] = useState(false)
   const [hasError, setHasError] = useState(false)
 
   const queue = useRef<Array<TransitionFunction<T>>>([])
-  const isLoading = useMemo(() => isPending || !isMounted, [isPending, isMounted])
+  const isLoading = useMemo(
+    () => isPending || !isMounted,
+    [isPending, isMounted]
+  )
 
   const startTransition = useCallback(
-    (transition: () => Promise<T>) : Promise<boolean> => {
-      return new Promise(resolve => {
+    async (transition: () => Promise<T>): Promise<boolean> => {
+      return await new Promise((resolve) => {
         if (isPending && isMounted) {
           queue.current.push(transition)
           return
         }
-  
+
         internalStartTransition(async () => {
           let haveError = false
           try {
@@ -52,38 +67,38 @@ export function usePersistentTransition<T>(
             }
             resolve(!haveError)
           }
-        })   
-      })   
+        })
+      })
     },
-    [isPending, internalStartTransition, queue, setState],
+    [isPending, internalStartTransition, queue, setState]
   )
 
   const setValue = useCallback(
     (value: T) => {
       setState({
         response: value,
-        mounted: true
+        mounted: true,
       })
     },
-    [setState],
+    [setState]
   )
 
   useEffect(() => {
     if (isMounted || hasError || state == null) {
-      return 
+      return
     }
 
     if (!state.mounted) {
       void startTransition(initialTransition)
-    } 
+    }
     setIsMounted(true)
   }, [isMounted, hasError, state])
-  
+
   return {
     data: state ? state.response : null,
     hasError,
     isLoading,
     startTransition,
-    setValue
+    setValue,
   }
 }

@@ -1,8 +1,10 @@
+import {
+  type ContentTypes,
+  type IContentMap,
+} from '@futurebrand/types/contents'
 import { type MetadataRoute } from 'next'
 
-import { ContentService } from '@futurebrand/services'
-import { ContentTypes, IContentMap } from '@futurebrand/types/contents'
-import HelpersRouter from '../router'
+import type HelpersRouter from '../router'
 
 interface IStaticPath {
   slug: string[]
@@ -10,15 +12,18 @@ interface IStaticPath {
 }
 
 type IStaticLimits = Partial<Record<ContentTypes, number>>
+type ISitemapExcept = Partial<Record<ContentTypes, boolean>>
 
 class RouterMap {
-  constructor (private router: HelpersRouter) {}
+  constructor(private readonly router: HelpersRouter) {}
 
-  public async getContentMap(type: ContentTypes, locale: string): Promise<IContentMap[]> {
-    const contentService = new ContentService()
-    return await contentService.map({
+  public async getContentMap(
+    type: ContentTypes,
+    locale: string
+  ): Promise<IContentMap[]> {
+    return await this.router.contentService.map({
       type,
-      locale
+      locale,
     })
   }
 
@@ -26,9 +31,9 @@ class RouterMap {
     if (process.env.NODE_ENV === 'development') {
       return []
     }
-    
+
     const singleTypes = Object.keys(limits) as ContentTypes[]
-    
+
     const paths: IStaticPath[] = []
 
     for (const locale of this.router.localization.locales) {
@@ -41,20 +46,21 @@ class RouterMap {
         const slicedPathsMap = pathsMap.slice(0, limit)
 
         for (const pathMap of slicedPathsMap) {
-          const path = this.router.getPath(pathMap.params, locale, type)
-          
-          if (!path) {
-            continue
-          }
-
           if (
             type === 'pages' &&
-            (pathMap.params.path === '/' || pathMap.params.path === `/${locale}`)
+            (pathMap.params.path === '/' ||
+              pathMap.params.path === `/${locale}`)
           ) {
             paths.push({
               slug: [],
               locale,
             })
+            continue
+          }
+
+          const path = this.router.getPath(pathMap.params, locale, type)
+
+          if (path == null) {
             continue
           }
 
@@ -69,13 +75,19 @@ class RouterMap {
     return paths
   }
 
-  public async generateSitemap(): Promise<MetadataRoute.Sitemap> {
+  public async generateSitemap(
+    excepts: ISitemapExcept = {}
+  ): Promise<MetadataRoute.Sitemap> {
     const singleTypes = this.router.contentType.mapContentTypes()
 
     const urls: MetadataRoute.Sitemap = []
 
     for (const locale of this.router.localization.locales) {
       for (const type of singleTypes) {
+        if (excepts[type]) {
+          continue
+        }
+
         const pathsMap = await this.getContentMap(type, locale)
         for (const pathMap of pathsMap) {
           const url = this.router.getUrl(pathMap.params, locale, type)
@@ -83,7 +95,7 @@ class RouterMap {
           if (!url) {
             continue
           }
-          
+
           const date = pathMap.date ? new Date(pathMap.date) : new Date()
           urls.push({
             url,

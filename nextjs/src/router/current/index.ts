@@ -1,7 +1,8 @@
-import { ContentTypes } from "@futurebrand/types/contents"
-import { IRoute } from "../types"
-import HelpersRouter from "../router"
-import { createCacheContext } from "@futurebrand/utils"
+import { type ContentTypes } from '@futurebrand/types/contents'
+import { createCacheContext } from '@futurebrand/utils'
+
+import type HelpersRouter from '../router'
+import { type IRoute } from '../types'
 
 interface ICurrentRoute {
   path: string
@@ -10,15 +11,15 @@ interface ICurrentRoute {
   type: ContentTypes
 }
 
-const [getCache, updateCache] = createCacheContext<ICurrentRoute | null>(null);
+const [getCache, updateCache] = createCacheContext<ICurrentRoute | null>(null)
 
-class CurrentRoute implements ICurrentRoute{
+class CurrentRoute implements ICurrentRoute {
   public path: string
   public locale: string
   public params: Record<string, string>
   public type: ContentTypes
 
-  constructor (private router: HelpersRouter) {
+  constructor(private readonly router: HelpersRouter) {
     const cacheData = getCache()
     if (cacheData) {
       this.path = cacheData.path
@@ -36,15 +37,22 @@ class CurrentRoute implements ICurrentRoute{
       this.path = this.router.getPath(this.params, this.locale, this.type)
     } else {
       this.path = route.slug ? `/${route.slug.join('/')}` : '/'
-      this.type = this.router.contentType.getTypeFromString(this.path, this.locale)
-      this.params = this.router.contentType.getParamsFromString(this.path, this.type, this.locale)
+      this.type = this.router.contentType.getTypeFromString(
+        this.path,
+        this.locale
+      )
+      this.params = this.router.contentType.getParamsFromString(
+        this.path,
+        this.type,
+        this.locale
+      )
     }
 
     updateCache({
       path: this.path,
       locale: this.locale,
       params: this.params,
-      type: this.type
+      type: this.type,
     })
   }
 

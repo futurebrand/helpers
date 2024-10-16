@@ -1,8 +1,7 @@
-import { createCacheContext } from "@futurebrand/utils";
-
-import { IDictonary } from "@futurebrand/types/global-options";
+import { type IDictonary } from '@futurebrand/types/global-options'
+import { createCacheContext } from '@futurebrand/utils'
 
 const [getServerDictionary, setServerDictionary] =
-  createCacheContext<IDictonary | null>(null);
+  createCacheContext<IDictonary | null>(null)
 
-export { getServerDictionary, setServerDictionary };
+export { getServerDictionary, setServerDictionary }

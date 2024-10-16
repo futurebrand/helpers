@@ -1,14 +1,18 @@
-import { I18nConfig } from "./types";
 import { loadLocalization } from '@futurebrand/services'
-import { ILocalization, ILocalizationRoute, type ContentTypes } from '@futurebrand/types/contents'
+import {
+  type ContentTypes,
+  type ILocalization,
+  type ILocalizationRoute,
+} from '@futurebrand/types/contents'
 
-import HelpersRouter from "../router";
+import type HelpersRouter from '../router'
+import { type I18nConfig } from './types'
 
 class RouterLocalization implements I18nConfig {
   locales: string[]
   defaultLocale: string
-  
-  constructor(private router: HelpersRouter) {
+
+  constructor(private readonly router: HelpersRouter) {
     this.locales = []
     this.defaultLocale = ''
   }
@@ -26,11 +30,11 @@ class RouterLocalization implements I18nConfig {
 
     path = path.startsWith('/') ? path : `/${path}`
     path = path.endsWith('/') ? path : `${path}/`
-  
+
     if (path.startsWith(`/${locale}`)) {
       return path
     }
-  
+
     return locale !== this.defaultLocale ? `/${locale}${path}` : path
   }
 
@@ -39,23 +43,22 @@ class RouterLocalization implements I18nConfig {
     type: ContentTypes
   ) {
     const localizations: ILocalizationRoute[] = []
-  
+
     for (const route of routes) {
       try {
         const { locale } = route
         const path = this.router.getPath(route.params, locale, type)
         localizations.push({
           locale,
-          path: this.localizePath(path, locale)
+          path: this.localizePath(path, locale),
         })
       } catch {
         continue
       }
     }
-  
+
     return localizations
   }
-  
 }
 
 export default RouterLocalization
